@@ -27,7 +27,7 @@ class User < ActiveRecord::Base
         puts "Please enter your birthdate in the following format: MM/DD/YYYY"
         birthday = gets.chomp
 
-            if birthday.match?(/((02\/[0-2]\d)|((01|[0][3-9]|[1][0-2])\/(31|30|[0-2]\d)))\/[12]\d{3}/)
+            if birthday.match?(/\A((02\/[0-2]\d)|((01|[0][3-9]|[1][0-2])\/(31|30|[0-2]\d)))\/[12]\d{3}\Z/)
              
             # birthday = gets.chomp
             # bday_sec = Time.new(birthday).to_i
@@ -85,7 +85,7 @@ class User < ActiveRecord::Base
         puts "Hope you found everything you were looking for, #{self.first_name}. Here are all the items you have in your current cart:"
         display_cart
         
-        current_cart.items.each { |indiv_item| indiv_item.inventory -= 1 }
+        current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
         binding.pry
         puts "Your total today is $#{current_cart_total}. Let's check out!"
         current_cart.update(checked_out: true)
@@ -93,11 +93,12 @@ class User < ActiveRecord::Base
 
     def check_out_after_viewing_cart
         puts "Thank for shopping with us, #{self.first_name}. This order has been processed."
-        self.current_cart.items.each { |item| item.inventory -= 1 }
+        self.current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
         self.current_cart.update(checked_out: true)
     end
 
     def view_current_cart
+        #cool banner?
         puts "Hope you're finding everything you are looking for, #{self.first_name}. Here are all the items you have in your current cart:"
         self.display_cart
     end
@@ -115,7 +116,7 @@ class User < ActiveRecord::Base
 
     def display_cart
         self.current_cart.items.each do |item|
-            puts "ID: #{item.id} NAME: #{item.name} PRICE: $#{"%.2f" % item.price}"
+            puts "ID: #{item.id}    PRICE: $#{"%.2f" % item.price}    NAME: #{item.name}    ORIGIN: #{item.origin}"
         end
     end
 
