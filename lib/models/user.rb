@@ -21,76 +21,53 @@ class User < ActiveRecord::Base
 
     end
 
-    # def self.register_a_user
-    #     x_var = "condition is not met"
-    #     while x_var == "condition is not met"
 
-    #         puts "Please enter your birthdate in the following format: YYYY, MM, DD"
-    #         birthday = gets.chomp
-    #         bday_sec = Time.new(birthday).to_i
+    def self.register_a_user
 
-    #     if bday_sec
+        puts "Please enter your birthdate in the following format: MM/DD/YYYY"
+        birthday = gets.chomp
 
-    #         if #user is 21
-    #             x_var = "condition is met" #breaks out of while loop
-    #         else 
-    #             #some condition 
-    #         end 
+            if birthday.match?(/((02\/[0-2]\d)|((01|[0][3-9]|[1][0-2])\/(31|30|[0-2]\d)))\/[12]\d{3}/)
+             
+            # birthday = gets.chomp
+            # bday_sec = Time.new(birthday).to_i
 
-    #     end 
-    # end 
+                    split_bday = birthday.split("/").map(&:to_i)
+                    
+                    bday_sec = Time.new(split_bday[2], split_bday[0], split_bday[1]).to_i
+                    age = (Time.now.to_i - bday_sec).to_f / (365 * 24 * 60 * 60)
+                    
+                    if age >= 21.0
+                        puts "Thank you! Now please enter your first name:"
+                        firstName = gets.chomp 
+                        puts "Thank you, #{firstName}, what would you like your username to be?"
+                        user_name = gets.chomp 
 
-    # def self.register_a_user
+                        user = User.find_by(username: user_name)
+                          
+                            until !User.find_by(username: user_name) do
+                                puts "Sorry, that username is already taken. Please enter another username."
+                                user_name = gets.chomp
+                            end
 
-    #     puts "Please enter your birthdate in the following format: YYYY, MM, DD"
-    #     birthday = gets.chomp
-    #     bday_sec = Time.new(birthday).to_i
+                        puts "And lastly, please enter your password:"
+                        pass_word = gets.chomp 
+                        user = User.create(first_name: firstName, username: user_name, password: pass_word)
+                        user.update(age: age.to_i)
+                        user                                  
 
-    #     #we need to figure out how to ensure that the birthdate is entered in the correct format because Time.new() can create
-    #     #a time as long as at least a 4 digit integer is included and it also doesn't know to separate the month & day if no commas
-    #     #are used
+                    else
+                        puts "Sorry, please return when you are 21."
+                        exit 
+                    end 
+                
 
-    #     if bday_sec
-
-
-    #     #calculates age of new user if birthday format is properly inputted 
-    #         if (Time.now.to_i - bday_sec).to_f / (365 * 24 * 60 * 60) >= 21.0
-    #         puts "Please enter a username."
-    #         userName = gets.chomp
-    #         puts "Please enter a password."
-    #         pass = gets.chomp
-            
-    #             user = User.find_by(username: userName)
-            
-    #             if user
-    #             puts "Sorry, that username is already taken"
-    #             else
-    #             # User.create(username: userName, password: pass, age: age)
-    #             end
-      
-    #         else
-    #         puts "Sorry, unfortunately you're not old enough yet. Please visit back on your 21st birthday!"
-    #         end
-
-    #     else
-    #     puts "Sorry, that format was incorrect."
-    #     register_a_user
-    #     end
-
-    # end
-
-  
-
-
-        # user = User.find_by(username: userName)
-
-        # if user
-        #     puts "Sorry, that username is already taken"
-        # else
-        #     User.create(username: userName, password: pass, age: age)
-    #     # end
-    # end
-
+            else
+                system 'clear'
+                puts "Sorry you entered in the incorrect format"
+                register_a_user
+            end
+    end
 
     def order_history
         orders.where(checked_out: true)
@@ -101,11 +78,17 @@ class User < ActiveRecord::Base
     end
 
     def check_out_current_cart
+        #checks if each item is in stock .each
+        #creates array of items out of stock
+        #puts sorry the following item(s) are out of stock
+        #delete orderitem inst
         puts "Hope you found everything you were looking for, #{self.first_name}. Here are all the items you have in your current cart:"
-        self.display_cart
+        display_cart
+        
+        current_cart.items.each { |indiv_item| indiv_item.inventory -= 1 }
+        binding.pry
         puts "Your total today is $#{current_cart_total}. Let's check out!"
-        self.current_cart.items.each { |item| item.inventory -= 1 }
-        self.current_cart.update(checked_out: true)
+        current_cart.update(checked_out: true)
     end
 
     def check_out_after_viewing_cart
@@ -119,16 +102,20 @@ class User < ActiveRecord::Base
         self.display_cart
     end
 
-        
+    
+    # def remove_from_current_cart(item_inst) 
+    #     #takes in id and removes item from cart of user 
+    #     user.current_cart.orderitems.find_by(order_item_id: id).destroy 
+    # end 
 
 
     def current_cart_total 
-        self.current_cart.items.sum(:price)
+        "%.2f" % self.current_cart.items.sum(:price)
     end 
 
     def display_cart
-        self.current_cart.order_items.each do |order_item|
-            puts "#{order_item.item.name}"
+        self.current_cart.items.each do |item|
+            puts "ID: #{item.id} NAME: #{item.name} PRICE: $#{"%.2f" % item.price}"
         end
     end
 
