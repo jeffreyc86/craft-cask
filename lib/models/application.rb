@@ -101,7 +101,6 @@ class Application
         end 
     end 
 
-
     def search_by_type
         system 'clear'
 
@@ -314,9 +313,13 @@ class Application
                 self.buy_alcs
             else 
                 item_inst = Item.find(choice)
+                    system 'clear'
+                    puts "NAME: #{item_inst.name}"
                     puts item_inst.description
+                    puts "RATING: #{item_inst.rating}"
+                    puts "ORIGIN: #{item_inst.origin}"
                     puts "ABV #{item_inst.abv}%"
-                    puts "Price: $#{"%.2f" % item_inst.price}"
+                    puts "PRICE: $#{"%.2f" % item_inst.price}"
                     prompt.select("Would you like to:") do |menu|
                         menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
                         menu.choice "Explore additional spirits from #{country}", -> {purchase_by_origin(country)}
@@ -362,6 +365,7 @@ class Application
     
 
     def add_to_cart(item)
+        system 'clear'
         if item.inventory >= 1
         user.add_item_to_cart(item)
                 puts "#{item.name} has been added to your cart."
@@ -373,7 +377,8 @@ class Application
                 end 
         elsif
             prompt.select("Sorry #{item.name} is currently out of stock. Would you like to:") do |menu|
-                menu.choice "Find an alternative", -> {buy_alcs}
+                menu.choice "Find an alternative #{item.alcohol_type}", -> {purchase_by_type(item.alcohol_type)}
+                menu.choice "Add other items to cart", -> {buy_alcs}
                 menu.choice "View your current cart", -> {view_cart}
                 menu.choice "Return to Main Menu", -> {main_menu}
             end 
@@ -465,13 +470,7 @@ class Application
     end
 
 
-    def try_again
-        prompt.select("Sorry we couldn't find a match. What would you like to do next?") do |menu|
-            menu.choice "Search by a different name", -> {search_by_name}
-            menu.choice "Search by type of spirt", -> {search_by_type}
-            menu.choice "Return to Main Menu", -> {main_menu}
-        end
-    end
+    
 
     def exit_app
         puts "Peace out homie!"
