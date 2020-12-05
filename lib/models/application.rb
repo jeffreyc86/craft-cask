@@ -15,8 +15,8 @@ class Application
         # # app name display
         puts File.read("lib/wordart/app_banner.txt")
         prompt.select("Would you like to register or login?") do |menu|
-            menu.choice "Register", -> {register_helper}
             menu.choice "Login", -> {login_helper}
+            menu.choice "Register", -> {register_helper}
             menu.choice "Alcohol is not for me", -> {exit_app}
         end
     end
@@ -64,10 +64,10 @@ class Application
         puts "What is the name of the spirit you are looking?"
         answer = gets.chomp 
         alcohols = Item.where("name LIKE ?", "%#{answer}%")
-        if alcohols
-            aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.name, alco.origin, alco.rating] } 
+        if Item.find_by("name LIKE ?", "%#{answer}%")
+            aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.alcohol_type, alco.name, alco.origin, alco.rating] } 
             options = aoa_alc_info.map do |arr| 
-                {"PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}    RATING: #{arr[4]}" => arr[0]}
+                {"PRICE: $#{"%.2f" % arr[1]}    TYPE: #{arr[2]}    NAME: #{arr[3]}    ORIGIN: #{arr[4]}     RATING: #{arr[5]}" => arr[0]}
             end << [{"Try a different name" => "Try a different name"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
             choice = prompt.select("These were the following results we found. Please select an option", options) 
                 if choice == "Try a different name"
@@ -80,8 +80,9 @@ class Application
                     item_inst = Item.find(choice)
                     system 'clear'
                     puts item_inst.description
+                    puts "Rating: #{item_inst.rating}"
+                    puts "Origin: #{item_inst.origin}"
                     puts "ABV #{item_inst.abv}%"
-                    puts "ORIGIN: #{item_inst.origin}"
                     puts "Price: $#{"%.2f" % item_inst.price}"
                     prompt.select("Would you like to:") do |menu|
                         menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
@@ -102,91 +103,44 @@ class Application
 
     def search_by_type
         system 'clear'
-         prompt.select("Which type of alcohol were you looking for?") do |menu|
-            #  menu.choice "Cognac", -> {buy_cog}
-            #  menu.choice "Gin", -> {buy_gin}
-            #  menu.choice "Liquer", -> {buy_liq}
-            #  menu.choice "Mezcal", -> {buy_mez}
-            #  menu.choice "Rum", -> {buy_rum}
-            #  menu.choice "Tequila", -> {buy_teq}
-            #  menu.choice "Vodka", -> {buy_vod}
-            #  menu.choice "Whiskey", -> {buy_whisk}
-         end
+
+        choice = prompt.select("Which type of alcohol were you looking for?", Item.all.pluck(:alcohol_type).uniq)
+        purchase_by_type(choice)
     end
 
-    def buy_alc_type(alc)
-        system 'clear'
-        alcohols = Item.where("alcohol_type = ?", alc)
-        puts "This is a list of our available #{alc}s."
-            aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.name, alco.origin] }
-            alc_ids = alcohols.map { |alco| alco.id }
-            aoa_alc_info.each do |arr|
-                puts "ID: #{arr[0]}    PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}"
-            end
-        puts "Please enter the ID of the #{alc} you would like to learn more about."
-        answer = gets.chomp
-        item_inst = Item.find_by(id: answer)
-            if item_inst && alc_ids.include?(answer.to_i)
-                puts item_inst.description
-                puts "ABV #{item_inst.abv}%"
-                puts "Price: $#{"%.2f" % item_inst.price}"
-                prompt.select("Would you like to:") do |menu|
-                    menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
-                    menu.choice "Explore additional #{alc}s", -> {buy_alc_type(alc)}
-                    menu.choice "Explore different types of spirits", -> {search_by_type}
-                    menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
-                    menu.choice "Return to Main Menu", -> {main_menu}
-                end 
-            else
-                prompt.select("Sorry there is no #{alc} by that ID. Would you like to:") do |menu|
-                    menu.choice "Explore additional #{alc}s", -> {buy_alc_type(alc)}
-                    menu.choice "Explore different types of spirits", -> {search_by_type}
-                    menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
-                    menu.choice "Return to Main Menu", -> {main_menu}
+        def purchase_by_type(alc)
+            system 'clear'
+            alcohols = Item.where("alcohol_type = ?", alc)
+            aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.name, alco.origin, alco.rating] } 
+            options = aoa_alc_info.map do |arr| 
+                {"PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}     RATING: #{arr[4]}" => arr[0]}
+            end << [{"Search for a different type of spirt" => "Search for a different type of spirt"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+            #     # puts File.read("lib/wordart/#{alc}.txt")
+                puts "This is a list of our available #{alc}s."
+                choice = prompt.select("Please select the item you would like to learn more about.", options)
+            
+                if choice == "Return to Main Menu"
+                    main_menu
+                elsif choice == "Search for a different type of spirt"
+                    search_by_type
+                elsif choice == "Search by a different critera"
+                    buy_alcs
+                else 
+                    item_inst = Item.find(choice)
+                        puts item_inst.description
+                        puts "Rating: #{item_inst.rating}"
+                        puts "Origin: #{item_inst.origin}"
+                        puts "ABV #{item_inst.abv}%"
+                        puts "Price: $#{"%.2f" % item_inst.price}"
+                        prompt.select("Would you like to:") do |menu|
+                            menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                            menu.choice "Explore additional #{alc}", -> {purchase_by_type(alc)}
+                            menu.choice "Explore another spirit types", -> {search_by_type}
+                            menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
+                            menu.choice "Return to Main Menu", -> {main_menu}
+                        end 
                 end
-            end 
-    end 
-
-    def buy_cog
-        #cool image/banner of cognacs
-        buy_alc_type("Cognac")
-    end 
-    
-    def buy_liq
-        #cool image/banner of cognacs
-        buy_alc_type("Liquer")
-    end  
-
-    def buy_mez
-        #cool image/banner of cognacs
-        buy_alc_type("Mezcal") 
-    end  
-
-    def buy_rum
-        #cool image/banner of cognacs
-        buy_alc_type("Rum")
-    end  
-
-    def buy_gin
-        #cool image/banner of cognacs
-        buy_alc_type("Gin")
-    end 
-
-    def buy_teq
-        #cool image/banner of cognacs
-        buy_alc_type("Tequila")
-    end 
-
-    def buy_vod
-        #cool image/banner of cognacs
-        buy_alc_type("Vodka") 
-    end 
-
-    def buy_whisk
-        #cool image/banner of cognacs
-        buy_alc_type("Whiskey")
-    end 
-
+            end
 
 
     def search_by_price        
@@ -211,6 +165,7 @@ class Application
             item_inst = Item.find_by(id: answer)
             if item_inst && alc_ids.include?(answer)
                 puts item_inst.description
+                puts "Rating: #{item_inst.rating}"
                 puts "Origin: #{item_inst.origin}"
                 puts "ABV #{item_inst.abv}%"
                 puts "Price: $#{"%.2f" % item_inst.price}"
@@ -273,28 +228,31 @@ class Application
         #enter id of item you want to purchase
     end 
     
+     #******** copy for other search by method
     def search_by_origin
         system 'clear'
         choice = prompt.select("Please select a country to see all available spirits.", Item.all.pluck(:origin).uniq)
         purchase_by_origin(choice)
     end
         
-    #******** copy for other search by method
         def purchase_by_origin(country)
             system 'clear'
             alcohols = Item.where("origin = ?", country)
-            aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.name, alco.rating] } 
+            aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.alcohol_type, alco.name, alco.rating] } 
             options = aoa_alc_info.map do |arr| 
-                {"PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    RATING: #{arr[3]}" => arr[0]}
-            end << {"Return to Main Menu" => "Return to Main Menu"}
+                {"PRICE: $#{"%.2f" % arr[1]}    TYPE: #{arr[2]}    NAME: #{arr[3]}    RATING: #{arr[4]}" => arr[0]}
+            end << [{"Search by a different region" => "Search by a different region"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
             # puts File.read("lib/wordart/#{country}.txt")
             puts "This is a list of our available spirits from #{country} ."
             choice = prompt.select("Please select the item you would like to learn more about.", options)
         
             if choice == "Return to Main Menu"
                 main_menu
+            elsif choice == "Search by a different region"
+                search_by_origin
+            elsif choice == "Search by a different critera"
+                self.buy_alcs
             else 
-                binding.pry
                 item_inst = Item.find(choice)
                     puts item_inst.description
                     puts "ABV #{item_inst.abv}%"
