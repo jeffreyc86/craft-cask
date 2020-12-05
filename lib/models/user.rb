@@ -14,23 +14,26 @@ class User < ActiveRecord::Base
         user = User.find_by(username: userName, password: pass)
 
         if user.nil?
-            puts "Sorry, nobody with that username and password combination exists. Please try again."
+            TTY::Prompt.new.select("Sorry, nobody with that username and password combination exists. Would you like to") do |menu|
+                menu.choice "Login again", -> {login_a_user}
+                menu.choice "Register", -> {register_a_user}
+                menu.choice "Exit", -> {exit_app}
+            end
         else
             user
         end
-
     end
 
+        def self.exit_app
+            puts "Peace out homie!"
+            exit
+        end
 
     def self.register_a_user
-
         puts "Please enter your birthdate in the following format: MM/DD/YYYY"
         birthday = gets.chomp
 
             if birthday.match?(/\A((02\/[0-2]\d)|((01|[0][3-9]|[1][0-2])\/(31|30|[0-2]\d)))\/[12]\d{3}\Z/)
-             
-            # birthday = gets.chomp
-            # bday_sec = Time.new(birthday).to_i
 
                     split_bday = birthday.split("/").map(&:to_i)
                     
@@ -39,32 +42,67 @@ class User < ActiveRecord::Base
                     
                     if age >= 21.0
                         puts "Thank you! Now please enter your first name:"
-                        firstName = gets.chomp 
-                        puts "Thank you, #{firstName}, what would you like your username to be?"
+                        firstName = gets.chomp
+
+                            until firstName.match?(/^\A([a-zA-Z]|-){2,30}\Z$/) do
+                                puts "Please re-enter your first name using only letters or hyphens."
+                                firstName = gets.chomp
+                            end 
+
+                        puts "Thank you, #{firstName.capitalize}, what would you like your USERNAME to be?"
+                        puts "Enter 5-15 characters using letters, numbers, and underscores(_)"
                         user_name = gets.chomp 
+
+                            until user_name.match?(/^\A\w{5,15}\Z$/) do
+                                puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
+                                user_name = gets.chomp
+                            end 
 
                         user = User.find_by(username: user_name)
                           
                             until !User.find_by(username: user_name) do
                                 puts "Sorry, that username is already taken. Please enter another username."
                                 user_name = gets.chomp
+                                    if !user_name.match?(/^\A\w{5,15}\Z$/) 
+                                        puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
+                                        user_name = gets.chomp
+                                    elsif User.find_by(username: user_name)
+                                        puts "Sorry, that username is also taken. Please enter another username."
+                                        user_name = gets.chomp
+                                    end 
                             end
 
-                        puts "And lastly, please enter your password:"
+                        puts "And lastly, please enter your password"
                         pass_word = gets.chomp 
-                        user = User.create(first_name: firstName, username: user_name, password: pass_word)
-                        user.update(age: age.to_i)
-                        user                                  
+                            until pass_word.match?(/^\A\S{5,15}\Z$/) do
+                                puts "Please enter a password 5-15 characters long."
+                                pass_word = gets.chomp
+                            end
+                        puts "Please re-enter your password"
+                        pass_word2 = gets.chomp
+                 
+                            until pass_word == pass_word2 do
+                                puts "Sorry the passwords did not match. Please enter a password."
+                                pass_word = gets.chomp 
+                                until pass_word.match?(/^\A\S{5,15}\Z$/) do
+                                    puts "Please enter a password 5-15 characters long."
+                                    pass_word = gets.chomp
+                                end
+                                puts "Please re-enter your password"
+                                pass_word2 = gets.chomp
+                            end
 
+                        user = User.create(first_name: firstName.capitalize, username: user_name, password: pass_word)
+                        user.update(age: age.to_i)
+                        user
                     else
+                        # puts File.read("lib/wordart/stop_uad.txt")
                         puts "Sorry, please return when you are 21."
                         exit 
-                    end 
-                
-
+                    end
             else
                 system 'clear'
-                puts "Sorry you entered in the incorrect format"
+                puts "Sorry you entered your birthdate in the incorrect format"
                 register_a_user
             end
     end
@@ -133,9 +171,22 @@ class User < ActiveRecord::Base
     def remove_item_from_cart()
     end
 
+    # def change_username(new_username)
+    #     if User.find_by(username: new_username)
+    #         puts 
 
-#puts time_stamp.strftime('%s')
-#puts time_stamp.to_i
-#timestamp = Time.at(628232400)
+    #     until !User.find_by(username: user_name) do
+    #         puts "Sorry, that username is already taken. Please enter another username."
+    #         user_name = gets.chomp
+    #             if user_name.match?(/^\A\w{5,15}\Z$/) && !User.find_by(username: user_name) 
+    #                 puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
+    #                 user_name = gets.chomp
+    #             elsif User.find_by(username: user_name)
+    #                 puts "Sorry, that username is also taken. Please enter another username."
+    #                 user_name = gets.chomp
+    #             end 
+    #     end
+                          
+    # end
 
 end

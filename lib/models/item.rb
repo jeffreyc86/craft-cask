@@ -11,7 +11,6 @@ class Item < ActiveRecord::Base
             "Not Yet Rated"
         else
             "%.1f" % reviews.average(:rating)
-        #select all of self.reviews.ratings
         end
     end
 
