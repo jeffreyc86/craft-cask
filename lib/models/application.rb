@@ -54,8 +54,8 @@ class Application
             menu.choice "Search by type", -> {search_by_type}
             menu.choice "Search by origin country", -> {search_by_origin}
             menu.choice "Search by price", -> {search_by_price}
-            menu.choice "Search by rating", -> {smell_you_later}
-            menu.choice "View all", -> {exit_app}
+            menu.choice "Search by rating", -> {search_by_rating}
+            menu.choice "View all", -> {view_all}
         end
         
     end
@@ -79,11 +79,12 @@ class Application
                 else 
                     item_inst = Item.find(choice)
                     system 'clear'
-                    puts item_inst.description
-                    puts "Rating: #{item_inst.rating}"
-                    puts "Origin: #{item_inst.origin}"
-                    puts "ABV #{item_inst.abv}%"
-                    puts "Price: $#{"%.2f" % item_inst.price}"
+                    puts "NAME: #{item_inst.name}"
+                        puts item_inst.description
+                        puts "RATING: #{item_inst.rating}"
+                        puts "ORIGIN: #{item_inst.origin}"
+                        puts "ABV #{item_inst.abv}%"
+                        puts "PRICE: $#{"%.2f" % item_inst.price}"
                     prompt.select("Would you like to:") do |menu|
                         menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
                         menu.choice "Search for another spirit by name", -> {search_by_name}
@@ -112,10 +113,8 @@ class Application
             system 'clear'
             alcohols = Item.where("alcohol_type = ?", alc)
             aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.name, alco.origin, alco.rating] } 
-            options = aoa_alc_info.map do |arr| 
-                {"PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}     RATING: #{arr[4]}" => arr[0]}
-            end << [{"Search for a different type of spirt" => "Search for a different type of spirt"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
-            #     # puts File.read("lib/wordart/#{alc}.txt")
+            options = aoa_alc_info.map { |arr| {"PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}     RATING: #{arr[4]}" => arr[0]} } << [{"Search for a different type of spirt" => "Search for a different type of spirt"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+                # puts File.read("lib/wordart/#{alc}.txt")
                 puts "This is a list of our available #{alc}s."
                 choice = prompt.select("Please select the item you would like to learn more about.", options)
             
@@ -127,11 +126,13 @@ class Application
                     buy_alcs
                 else 
                     item_inst = Item.find(choice)
+                        system 'clear'
+                        puts "NAME: #{item_inst.name}"
                         puts item_inst.description
-                        puts "Rating: #{item_inst.rating}"
-                        puts "Origin: #{item_inst.origin}"
+                        puts "RATING: #{item_inst.rating}"
+                        puts "ORIGIN: #{item_inst.origin}"
                         puts "ABV #{item_inst.abv}%"
-                        puts "Price: $#{"%.2f" % item_inst.price}"
+                        puts "PRICE: $#{"%.2f" % item_inst.price}"
                         prompt.select("Would you like to:") do |menu|
                             menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
                             menu.choice "Explore additional #{alc}", -> {purchase_by_type(alc)}
@@ -140,95 +141,154 @@ class Application
                             menu.choice "Return to Main Menu", -> {main_menu}
                         end 
                 end
-            end
-
-
-    def search_by_price        
+        end
+                
+                
+    def search_by_price 
+        system 'clear'       
         prompt.select("Which price range would you like to explore?") do |menu|
-            menu.choice "$0 - $50", -> {first_range}
-            menu.choice "$51 - $100", -> {second_range}
-            menu.choice "$101 - $150", -> {third_range}
+            menu.choice "$0 - $50", -> {price_range_helper("$0 - $50", (0.0..50.99))}
+            menu.choice "$51 - $100", -> {price_range_helper("$51 - $100", 51.0..100.99)}
+            menu.choice "$101 - $150", -> {price_range_helper("$101 - $150", 101.0..150.99)}
             menu.choice "$150+", -> {fourth_range}
         end 
     end 
-
+        
         def price_range_helper(price_range_str, price_range)
-            puts "Here is a list of our finest spirits in the #{price_range_str} range:"
-            items_in_price_range = Item.where(:price => price_range) 
-            aoa_alc_info = items_in_price_range.map { |alco| [alco.id, alco.price, alco.name, alco.origin] }
-                alc_ids = items_in_price_range.map { |alco| alco.id }
-                    aoa_alc_info.each do |arr|
-                        puts "ID: #{arr[0]}    PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}"
-                    end
-            puts "Please enter the ID of the spirit you would like to explore"
-            answer = gets.chomp 
-            item_inst = Item.find_by(id: answer)
-            if item_inst && alc_ids.include?(answer)
-                puts item_inst.description
-                puts "Rating: #{item_inst.rating}"
-                puts "Origin: #{item_inst.origin}"
-                puts "ABV #{item_inst.abv}%"
-                puts "Price: $#{"%.2f" % item_inst.price}"
-                prompt.select("Would you like to:") do |menu|
-                    menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
-                    menu.choice "Explore additional another option within the #{price_range_str} range", -> {price_range_helper(price_range_str, price_range)}
-                    menu.choice "Explore options by another price range", -> {search_by_price}
+            if !Item.find_by(:price => price_range)
+                prompt.select("Sorry, there are no items within that price range. Would you like to") do |menu|
+                    menu.choice "Explore spirits from a different price range", -> {search_by_price}
                     menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
                     menu.choice "Return to Main Menu", -> {main_menu}
-                end 
-            else 
-                prompt.select("Sorry we couldn't find a spirit with that ID in the range you are looking for") do |menu|
-                    menu.choice "Explore additional options within the #{price_range_str} range", -> {price_range_helper(price_range_str, price_range)}
-                    menu.choice "Explore options by another price range", -> {search_by_price}
-                    menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
-                    menu.choice "Return to Main Menu", -> {main_menu}
-                end  
-            end 
-        end 
-
-        def first_range 
-            range = 0.0..50.99
-            price_range_helper("$0 - $50", range)
-        end 
+                end
+            else
+            items_in_price_range = Item.where(:price => price_range).sort_by(&:price) 
+            puts "Here is a list of our finest spirits in the #{price_range_str} range:"  
+            aoa_alc_info = items_in_price_range.map { |alco| [alco.id, alco.price, alco.alcohol_type, alco.name, alco.origin, alco.rating] }
+            options = aoa_alc_info.map { |arr| {"PRICE: $#{"%.2f" % arr[1]}    TYPE: #{arr[2]}    NAME: #{arr[3]}    ORIGIN: #{arr[4]}     RATING: #{arr[5]}" => arr[0]} } << [{"Search by a different price range" => "Search by a different price range"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+            choice = prompt.select("Please select the item you would like to learn more about.", options)
     
-        def second_range
-            range = 51.0..100.99
-            price_range_helper("$51 - $100", range)
-        end
+                if choice == "Return to Main Menu"
+                main_menu
+                elsif choice == "Search by a different price range"
+                search_by_price
+                elsif choice == "Search by a different critera"
+                buy_alcs
+                else 
+                item_inst = Item.find(choice)
+                    system 'clear'
+                    puts "NAME: #{item_inst.name}"
+                    puts item_inst.description
+                    puts "RATING: #{item_inst.rating}"
+                    puts "ORIGIN: #{item_inst.origin}"
+                    puts "ABV #{item_inst.abv}%"
+                    puts "PRICE: $#{"%.2f" % item_inst.price}"
+                    prompt.select("Would you like to:") do |menu|
+                        menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                        menu.choice "Explore additional spirits from the #{price_range_str} range.", -> {price_range_helper(price_range_str, price_range)}
+                        menu.choice "Explore spirits from a different price range", -> {search_by_price}
+                        menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
+                        menu.choice "Return to Main Menu", -> {main_menu}
+                    end 
+                end
+    
+            end    
+        end 
+        
+            def fourth_range 
+                range = 151.0..100000000.0
+                puts "You're a big baller!"
+                price_range_helper("$150+", range)  
+            end
 
-        def third_range
-            range = 101.0..150.99
-            price_range_helper("$101 - $150", range)
-        end
-
-        def fourth_range 
-            range = 151.0..100000000.0
-            puts "You're a big baller!"
-            price_range_helper("$150+", range)  
-        end
     
     def search_by_rating
+        system 'clear'
+        prompt.select("All of our ratings are created by users like you! Please select the rating you'd like to view by") do |menu|
+            menu.choice "4+", -> {purchase_by_rating([4.0, 5.0])}
+            menu.choice "3+", -> {purchase_by_rating([3.0, 3.99])}
+            menu.choice "2+", -> {purchase_by_rating([2.0, 2.99])}
+            menu.choice "1+", -> {purchase_by_rating([1.0, 1.99])}
+            menu.choice "0+", -> {purchase_by_rating([0.0, 0.99])}
+            menu.choice "Unrated Items", -> {purchase_by_rating("Not Yet Rated")}
+        end
+    end
 
-        #4+ 
-            #spit out array of items with rating of 4+
-            #enter item id you want to learn about
-        #3+
-            #enter item id you want to learn about
-        #2+
-            #enter item id you want to learn about
-        #1+
-            #enter item id you want to learn about
-        #unrated
-            #enter item id you want to learn about
-    end 
-
-    def search_by_rating_helper 
-    #view_all
-        #display all items
-        #enter id of item you want to purchase
-    end 
+        def purchase_by_rating(range)
+            system 'clear'
+            if range == "Not Yet Rated"
+                alcohols = Item.all.select { |item| item.rating == "Not Yet Rated" }.sort_by(&:price)
+                aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.alcohol_type, alco.name, alco.origin, alco.rating] } 
+                options = aoa_alc_info.map do |arr| 
+                {"PRICE: $#{"%.2f" % arr[1]}    TYPE: #{arr[2]}    NAME: #{arr[3]}    ORIGIN: #{arr[4]}     RATING: #{arr[5]}" => arr[0]}
+                end << [{"Search by a different rating" => "Search by a different rating"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+                choice = prompt.select("Please select the item you would like to learn more about.", options)
+            
+                    if choice == "Return to Main Menu"
+                    main_menu
+                    elsif choice == "Search by a different rating"
+                    search_by_rating
+                    elsif choice == "Search by a different critera"
+                    buy_alcs
+                    else 
+                    item_inst = Item.find(choice)
+                        system 'clear'
+                        puts "NAME: #{item_inst.name}"
+                        puts item_inst.description
+                        puts "RATING: #{item_inst.rating}"
+                        puts "ORIGIN: #{item_inst.origin}"
+                        puts "ABV #{item_inst.abv}%"
+                        puts "PRICE: $#{"%.2f" % item_inst.price}"
+                        prompt.select("Would you like to:") do |menu|
+                            menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                            menu.choice "Explore more spirits within the same rating range", -> {purchase_by_rating(range)}
+                            menu.choice "Explore spirits from a different rating rnage", -> {search_by_rating}
+                            menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
+                            menu.choice "Return to Main Menu", -> {main_menu}
+                        end 
+                    end
+            else
+                alcohols = Item.all.select { |item| item.rating.to_f.between?(range[0], range[1]) }.sort_by(&:rating)
+                if alcohols.count == 0
+                    prompt.select("Sorry, there are no items within that rating range. Would you like to") do |menu|
+                        menu.choice "Explore spirits from a different rating range", -> {search_by_rating}
+                        menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
+                        menu.choice "Return to Main Menu", -> {main_menu}
+                    end
+                else
+                    aoa_alc_info = alcohols.map { |alco| [alco.id, alco.rating, alco.price, alco.alcohol_type, alco.name, alco.origin] } 
+                    options = aoa_alc_info.map do |arr| 
+                    {"RATING: #{arr[1]}    PRICE: $#{"%.2f" % arr[2]}    TYPE: #{arr[3]}    NAME: #{arr[4]}    ORIGIN: #{arr[5]}" => arr[0]}
+                    end << [{"Search by a different rating" => "Search by a different rating"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+                    choice = prompt.select("These are all our options with those ratings. Please select the item you would like to learn more about.", options)
+            
+                        if choice == "Return to Main Menu"
+                        main_menu
+                        elsif choice == "Search by a different rating"
+                        search_by_rating
+                        elsif choice == "Search by a different critera"
+                        buy_alcs
+                        else 
+                        item_inst = Item.find(choice)
+                            system 'clear'
+                            puts "NAME: #{item_inst.name}"
+                            puts item_inst.description
+                            puts "RATING: #{item_inst.rating}"
+                            puts "ORIGIN: #{item_inst.origin}"
+                            puts "ABV #{item_inst.abv}%"
+                            puts "PRICE: $#{"%.2f" % item_inst.price}"
+                            prompt.select("Would you like to:") do |menu|
+                                menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                                menu.choice "Explore more spirits within the same rating range", -> {purchase_by_rating(range)}
+                                menu.choice "Explore spirits from a different rating rnage", -> {search_by_rating}
+                                menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
+                                menu.choice "Return to Main Menu", -> {main_menu}
+                            end 
+                        end
+                end
+            end     
+        end
     
-     #******** copy for other search by method
     def search_by_origin
         system 'clear'
         choice = prompt.select("Please select a country to see all available spirits.", Item.all.pluck(:origin).uniq)
@@ -267,6 +327,40 @@ class Application
             end
         end
 
+    def view_all
+
+        system 'clear'
+            alcohols = Item.all.sort_by(&:name)
+            aoa_alc_info = alcohols.map { |alco| [alco.id, alco.name, alco.price, alco.alcohol_type , alco.origin, alco.rating] }
+            options = aoa_alc_info.map { |arr| {"NAME: #{arr[1]}    PRICE: $#{"%.2f" % arr[2]}    TYPE: #{arr[3]}    ORIGIN: #{arr[4]}     RATING: #{arr[5]}" => arr[0]} }.unshift([{"Search by a specific critera" => "Search by a specific critera"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
+                # puts File.read("lib/wordart/#{alc}.txt")
+                puts "Here's a list of all of our spirits in alphabetical order."
+                choice = prompt.select("Please select the item you would like to learn more about.", options)
+            
+                if choice == "Return to Main Menu"
+                    main_menu
+                elsif choice == "Search by a specific critera"
+                    buy_alcs
+                else 
+                    item_inst = Item.find(choice)
+                        system 'clear'
+                        puts "NAME: #{item_inst.name}"
+                        puts item_inst.description
+                        puts "RATING: #{item_inst.rating}"
+                        puts "ORIGIN: #{item_inst.origin}"
+                        puts "ABV #{item_inst.abv}%"
+                        puts "PRICE: $#{"%.2f" % item_inst.price}"
+                        prompt.select("Would you like to:") do |menu|
+                            menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                            menu.choice "View all again", -> {view_all}
+                            menu.choice "Explore spirits by a specific criteria", -> {buy_alcs}
+                            menu.choice "Return to Main Menu", -> {main_menu}
+                        end 
+                end
+    end
+
+    
+
     def add_to_cart(item)
         if item.inventory >= 1
         user.add_item_to_cart(item)
@@ -278,7 +372,7 @@ class Application
                     menu.choice "Return to Main Menu", -> {main_menu}
                 end 
         elsif
-            prompt.select("Sorry #{item_inst.name} is currently out of stock. Would you like to:") do |menu|
+            prompt.select("Sorry #{item.name} is currently out of stock. Would you like to:") do |menu|
                 menu.choice "Find an alternative", -> {buy_alcs}
                 menu.choice "View your current cart", -> {view_cart}
                 menu.choice "Return to Main Menu", -> {main_menu}

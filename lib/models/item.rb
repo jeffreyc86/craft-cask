@@ -4,7 +4,7 @@ class Item < ActiveRecord::Base
     has_many :order_items 
     has_many :orders, through: :order_items
 
-
+    # attr_accessor: rating
     
     def rating
         if reviews.count == 0

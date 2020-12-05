@@ -78,10 +78,8 @@ class User < ActiveRecord::Base
     end
 
     def check_out_current_cart
-        #checks if each item is in stock .each
-        #creates array of items out of stock
-        #puts sorry the following item(s) are out of stock
-        #delete orderitem inst
+
+        destroy_all_order_items_if_sold_out
         puts "Hope you found everything you were looking for, #{self.first_name}. Here are all the items you have in your current cart:"
         display_cart
         
@@ -99,11 +97,19 @@ class User < ActiveRecord::Base
 
     def view_current_cart
         #cool banner?
-        puts "Hope you're finding everything you are looking for, #{self.first_name}. Here are all the items you have in your current cart:"
+        destroy_all_order_items_if_sold_out
+        puts "Hope you're finding everything you are looking for, #{self.first_name}. Here are all the items currently in your cart:"
         self.display_cart
     end
 
-    
+    def destroy_all_order_items_if_sold_out
+        sold_out_items = current_cart.items.where(inventory: 0)
+        sold_out_items.each do |item|
+            OrderItem.find_by(order_id: current_cart.id, item_id: item.id).destroy
+            puts "Sorry, unfortunately #{item.name} is currently out of stock. It has been removed."
+        end
+    end
+
     # def remove_from_current_cart(item_inst) 
     #     #takes in id and removes item from cart of user 
     #     user.current_cart.orderitems.find_by(order_item_id: id).destroy 
@@ -116,7 +122,7 @@ class User < ActiveRecord::Base
 
     def display_cart
         self.current_cart.items.each do |item|
-            puts "ID: #{item.id}    PRICE: $#{"%.2f" % item.price}    NAME: #{item.name}    ORIGIN: #{item.origin}"
+            puts "PRICE: $#{"%.2f" % item.price}    NAME: #{item.name}    TYPE: #{item.alcohol_type}    ORIGIN: #{item.origin}     RATING: #{item.rating}"
         end
     end
 
