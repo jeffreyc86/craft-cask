@@ -14,4 +14,10 @@ class Item < ActiveRecord::Base
         end
     end
 
+    def all_reviews
+        reviews.each_with_index do |rev, index|
+            puts "#{index + 1}) RATING: #{rev.rating}    REVIEW: #{rev.review}"
+        end
+    end
+
 end 

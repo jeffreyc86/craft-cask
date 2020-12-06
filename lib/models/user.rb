@@ -80,7 +80,7 @@ class User < ActiveRecord::Base
                                     end 
                             end
 
-                        puts "And lastly, please enter a PASSWORD"
+                        puts "And lastly, please enter a PASSWORD 5-15 characters long"
                         pass_word = gets.chomp 
                             until pass_word.match?(/^\A\S{5,15}\Z$/) do
                                 puts "Please enter a PASSWORD 5-15 characters long."
