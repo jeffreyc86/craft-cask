@@ -44,7 +44,7 @@ Order.create(user_id: 13, checked_out: false)
 Order.create(user_id: 14, checked_out: false)
 
 #create items
-Item.create(name: "Rémy Martin XO Limited Edition Bottle | 750 ml", alcohol_type: "Cognac", price: 169,0, inventory: 0, abv: 40, origin: "France 🇫🇷", description: "Remy Martin XO is a masterful blend of over 400 eaux-de-vie from the two finest-quality vineyards of Cognac and aged up to 30 years in French oak casks. Aromatic, opulent and velvety, with a wide spectrum of stone fruit notes, hints of hazelnut and cinnamon.")
+Item.create(name: "Rémy Martin XO Limited Edition Bottle | 750 ml", alcohol_type: "Cognac", price: 169.0, inventory: 0, abv: 40, origin: "France 🇫🇷", description: "Remy Martin XO is a masterful blend of over 400 eaux-de-vie from the two finest-quality vineyards of Cognac and aged up to 30 years in French oak casks. Aromatic, opulent and velvety, with a wide spectrum of stone fruit notes, hints of hazelnut and cinnamon.")
 Item.create(name: "Frapin 1270 | 750 ml", alcohol_type: "Cognac", price: 55.0, inventory: 66, abv: 40, origin: "France 🇫🇷", description: "Single estate, 100% Grand Champagne, premier cru de cognac. Exclusively harvested, distilled and aged from the Frapin estate's terroir and know-how. A warm golden straw color. Aromas of vine and lime blossom with a light touch of vanilla from its ageing in Limousin oak barrels.")
 Item.create(name: "Ferrand 10 Generations Cognac | 750 ml", alcohol_type: "Cognac", price: 60.0, inventory: 33, abv: 46, origin: "France 🇫🇷", description: "A tribute to the 10 generations of the Ferrand family who have built up their eponymous Cognac house since 1630. This is aged in French oak with 20% in Sauternes casks, and retains a freshness despite its rich character.")
 Item.create(name: "Barr Hill Tom Cat Reserve Gin | 750 ml", alcohol_type: "Gin", price: 57.99, inventory: 33, abv: 43, origin: "America 🇺🇸", description: "Barrel aged 4-6 months in new, charred American White Oak, Tom Cat is a completely unique gin with whiskey-like notes of oak, spice and a finish of juniper and raw honey. Tom Cat is the modern day adaption of 18th century England’s most revered spirit, Old Tom gin. After gin was outlawed by the Spirits Act of 1750, rebellious pub owners would hang a wooden plaque shaped like a black cat to inform the passerby of their defiance of the ban. Deposit a few pennies through the cat’s mouth and a bartender would pour a ration of Old Tom to be sipped through a tube between the cat’s paws.")
@@ -67,7 +67,7 @@ Item.create(name: "Copalli White Rum | 750 ml", alcohol_type: "Rum", price: 29.9
 Item.create(name: "Ten to One Rum Dark Rum | 750 ml", alcohol_type: "Rum", price: 42.0, inventory: 77, abv: 40, origin: "Caribbean 🏴‍☠️", description: "Ten to One is a brand that blends rum from various countries in the Caribbean. In the case of the dark rum, it’s eight-year-old column still rum from Barbados and the Dominican Republic, Trinidadian rum, and some Jamaican pot still rum as well. No color, flavoring, or sugar is added. This is a solid sipper and mixer, not overly sweet with just a hint of that Jamaican rum funk hidden beneath the surface.")
 Item.create(name: "Diplomático Rum Reserva Exclusiva | 750 ml", alcohol_type: "Rum", price: 39.99, inventory: 53, abv: 40, origin: "Venezuela 🇻🇪", description: "Diplomatico Rum Reserva Exclusiva is a complex blend of Copper pot still rums aged for 12 long years, has a characterful nose, showing fruit cake, rum'n'raisin ice cream, cocoa, dried ginger, cinnamon and clove. Develops baked bananas with fudge sauce and chewy toffee notes alongside vanilla oak and a deeper note of syrupy gingerbread, with hints of orange zest. The palate evokes chocolate sauce and the sweet toffee, fudge and tropical fruit flavours from the nose.")
 Item.create(name: "Cimarron Blanco | 1 L", alcohol_type: "Tequila", price: 25.99, inventory: 74, abv: 40, origin: "Mexico 🇲🇽", description: "Made by none other than tequila legend Enrique Fonseca. The high elevation, complete control over cultivation, proprietary yeasts, and methods of crushing the agave, followed by a long, slow distillation imbues this excellent tequila with layers and layers of bright character. This should be in everybody's well, at everybody's bar, and in everybody's glass. No need to think twice here, folks; this is the real thing. This highland agave tequila is distilled for a dry profile to allow greater control of cocktail sweetness.")
-Item.create(name: "Tequila Cabeza | 750 ml", alcohol_type: "Tequila", price: 34.99, inventory: 88, abv: 43, origin: "Mexico 🇲🇽", description: "This tequila hails from Arandas in Jalisco at the El Ranchito Distillery owned by the Vivanco family, fifth generation agaveros. The agaves are sourced from their own estate which they grow from the "hijuelo" stage (baby shoots) to maturation at 7-9 years of age. The piñas are cooked for 24 hours in 100 degree ovens. Champagne yeast is used for fermentation which occurs only in the winter months. This allows an extended mash period and a fruitier distillate.")
+Item.create(name: "Tequila Cabeza | 750 ml", alcohol_type: "Tequila", price: 34.99, inventory: 88, abv: 43, origin: "Mexico 🇲🇽", description: 'This tequila hails from Arandas in Jalisco at the El Ranchito Distillery owned by the Vivanco family, fifth generation agaveros. The agaves are sourced from their own estate which they grow from the "hijuelo" stage (baby shoots) to maturation at 7-9 years of age. The piñas are cooked for 24 hours in 100 degree ovens. Champagne yeast is used for fermentation which occurs only in the winter months. This allows an extended mash period and a fruitier distillate.')
 Item.create(name: "Lunazul Blanco Tequila | 750 ml", alcohol_type: "Tequila", price: 24.99, inventory: 60, abv: 40, origin: "Mexico 🇲🇽", description: "Lunazul Tequila is distilled and bottled with 100% Blue Weber Agave at the Tierra de Agaves Distillery in Tequila, Jalisco, Mexico. Tierra de Agaves was founded in 2002 by Francisco Beckmann, former co-owner of Jose Cuervo, to pursue his personal goal of producing the best tequila in the world. Each of the Lunazul varieties, Blanco, Reposado, Añejo and Primero are hand-crafted and rooted in tradition. Lunazul is affordable luxury— 100% agave, hand-labeled and hand- crafted.")
 Item.create(name: "El Tesoro Extra Añejo | 750 ml", alcohol_type: "Tequila", price: 100.0, inventory: 32, abv: 40, origin: "Mexico 🇲🇽", description: "Using rare, old stock aged in ex-Bourbon barrels for a minimum of four to five years, this is Extra Añejo that is more than just older for older's sake. As with all aged tequila and especially so for anejos, retaining agave character and balance is paramount. This brand does as masteful a job as any under the guidance of Tequila legend Carlos Camarena.")
 Item.create(name: "Hiatus Reposado Tequila | 750 ml", alcohol_type: "Tequila", price: 54.0, inventory: 46, abv: 40, origin: "Mexico 🇲🇽", description: "Hiatus is made at La Cofradia, the same distillery as Casa Noble, which is a good indicator of its quality. Their Reposado is rested 6 months in American whiskey barrels, giving it a pale straw hue. Caramelized agave, roasted red pepper, and cinnamon notes give way to hazelnut and vanilla.")
@@ -96,7 +96,7 @@ Item.create(name: "Ohishi Single Sherry Cask | 750 ml", alcohol_type: "Whiskey",
 Item.create(name: "Yamazaki 12 Year Old | 750 ml", alcohol_type: "Whiskey", price: 143.0, inventory: 50, abv: 43, origin: "Japan 🇯🇵", description: "One of the first Japanese single malts to break into the UK market, Suntory's Yamazaki 12 Year Old continues to impress with its well-balanced fruity sweetness, something that appeals to novice and experienced whisky drinkers alike. Medium bodied and honeyed in style, this easy vanilla malt bursts with apple fruit and jasmine freshness but is made complex thanks to notes of candied orange peel, cinnamon and clove spice and balancing dusty cigarette ash and cedarwood dryness.")
 Item.create(name: "Nikka Days | 750 ml", alcohol_type: "Whiskey", price: 40.0, inventory: 50, abv: 40, origin: "Japan 🇯🇵", description: "A vibrant addition to the Nikka range, Nikka Days is a bright and vivacious blend of malt and grain whiskies from both Nikka's Yoichi and Miyagikyo distilleries. Its medium body hosts an array of floral and zesty flavours which mingle effortlessly with an underlying vanilla-toffee depth and a light, distant touch of breezy peat smoke. A fresh and delicate whisky, Days makes a delicious sipping dram or sits beautifully in a refreshing highball.")
 Item.create(name: "Akashi Single Malt | 750 ml", alcohol_type: "Whiskey", price: 133.0, inventory: 50, abv: 46, origin: "Japan 🇯🇵", description: "Ten months out of each year, the White Oak Distillery produces Sake and Shochu exclusively. So all of their Whisky production happens in just two months. Eigashima’s most popular Whisky is their Akashi Blend. But they also produce a few precious runs of their Akashi Single Malt — which is then divided up between their finished-woods and Whisky blends. That means that there is jut not a lot of this dram to go around. Technically, it’s a marriage of their Single Malt in three different agings — seven, five, and four year-old — from three different cask types — Spanish Sherry, New American Oak, and ex-Bourbon.")
-Item.create(name: "Chichibu Ichiro's Malt and Grain | 750 ml", alcohol_type: "Whiskey", price: 101.99, inventory: 50, abv: 46, origin: "Japan 🇯🇵", description: "Ichiro's Malt & Grain is labeled as "a worldwide blended whisky." The exact components of this gem are kept secret, but there appears to be a lot of local, Japanese spirit with enough outside elements to craft the flavor profile Ichiro was looking for. It is — obviously — a combination of Single Malts and grain Whiskies married at the Chichibu Distillery, but all that you will notice is the lovely flavor profile, delicate texture, and spot-on 46% ABV.")
+Item.create(name: "Chichibu Ichiro's Malt and Grain | 750 ml", alcohol_type: "Whiskey", price: 101.99, inventory: 50, abv: 46, origin: "Japan 🇯🇵", description: "Ichiro's Malt & Grain is labeled as a 'worldwide blended whisky'. The exact components of this gem are kept secret, but there appears to be a lot of local, Japanese spirit with enough outside elements to craft the flavor profile Ichiro was looking for. It is — obviously — a combination of Single Malts and grain Whiskies married at the Chichibu Distillery, but all that you will notice is the lovely flavor profile, delicate texture, and spot-on 46% ABV.")
 Item.create(name: "Monkey Shoulder | 750 ml", alcohol_type: "Whiskey", price: 35.49, inventory: 50, abv: 40, origin: "Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿", description: "Monkey Shoulder is a blend of Speyside single malt Scotch whiskies which are married together for flavor and consistency. The richness and vibrancy combine with fruity aromas and mellow vanilla, making it perfect for mixed drinks and cocktails.")
 Item.create(name: "Laphroaig 10 Year Cask Strength | 750 ml", alcohol_type: "Whiskey", price: 68.0, inventory: 50, abv: 43, origin: "Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿", description: "It's no secret that Scotland is renowned for its whiskies. Iodine-rich scotch from the Islay region is among the country's most characterful drams, with Laphroaig offering one of the most exceptional medicinal malts. The Laphroaig 10 Year is the company's entry-level scotch, which boasts a medium caramel color when poured into a glass. Scents of smoke, decay, salt, charcoal, leather and wet stone hit the nose, opening up to herbal ocean tones, peanut butter fudge and a sweet gumminess.")
 Item.create(name: "The GlenDronach Cask Strength Batch 8 | 750 ml", alcohol_type: "Whiskey", price: 95.0, inventory: 50, abv: 61, origin: "Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿", description: "Fans of sherry cask single malts like The Macallan and Aberlour should definitely try this new, cask strength version of The GlenDronach. It spent 10 years in PX and Oloroso sherry casks before being bottled at 122 proof, which provides some nice heat and spice to the sweet notes of dried fruit and fig. This is the eighth batch of the cask strength expression, which is non-chill filtered with no color added.")
@@ -112,120 +112,120 @@ OrderItem.create(order_id: rand(17..30), item_id: rand(57))
 end
 
 #create reviews
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Loved this! Is great neat or on the rocks.")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Went perfectly with the cocktails I was making")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "This shit slapppssssss")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Just WOW!!!! Definite buy")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Such a nice finish!")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Couldn't stop drinking. Might b drunkkkkkkskfdgt43efsd")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Purchasing the remaining stock right now!")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "So delicious! Transported me right back to pre-COVID")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Tasted great, but would've been better if we could've drank it outside in a bar...without masks")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Pretty good")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Reminded me of a drink I had back in Rome. Quite tasty")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "OMG so yumm!")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Almost perfect. Wish it went down a bit smoother.")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Loved the design on the bottle. Taste was pretty good.")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "Not my fav but still a good drink")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "Ehhh I've had better")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "My partner got mad because I purchased the wrong version. Had to sleep on the couch")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "Got pretty hammered, but woke up with the worst hangover")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Steer clear! Gave me the worst hangover")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Not the best...")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Taste is def not worth the price")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Couldn't get it down but my friend loved it")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "Not a fan")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "I'd barely call this drinkable")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "Never buying again")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "Love most of the spirits on here but this one was a bummer")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 0, review: "THE WORST!!!!")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 0, review: "Hated this")
 end
 
-3.times.do
+3.times do
 Review.create(user_id: rand(16), item_id: rand(57), rating: 0, review: "Wish I could get my money back. This definitely was not worth it")
 end
 
-puts "Data has been seeded."
+puts "Data has been seeded!"
