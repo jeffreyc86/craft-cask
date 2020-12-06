@@ -51,44 +51,163 @@ class Application
     def account_settings
         system 'clear'
         prompt.select("Hello, #{user.first_name}! Please select from the following options") do |menu|
-        menu.choice "Change your First Name", -> {change_name}
-        menu.choice "Change your Username", -> {change_username}
-        menu.choice "Update your Password", -> {change_password}
+        menu.choice "Change your FIRST NAME", -> {change_name}
+        menu.choice "Change your USERNAME", -> {change_username}
+        menu.choice "Update your PASSWORD", -> {change_password}
         menu.choice "View Order History", -> {smell_you_later}
+        menu.choice "View your Reviews", -> {view_reviews}
         menu.choice "Delete Account", -> {delete_account}
         menu.choice "Return to Main Menu", -> {main_menu}
         end
     end
 
+    def view_reviews
+        if !Review.find_by(user_id: user.id)
+            prompt.select("Sorry, #{user.first_name}. It looks like you haven't made any reviews yet. What do you want to do?") do |menu|
+            menu.choice "Review an item", -> {write_review}
+            menu.choice "View Your Cart", -> {view_cart}
+            menu.choice "Return to Account Settings", -> {account_settings}
+            menu.choice "Return to Main Menu", -> {main_menu}
+            end
+        else
+        end
+
+    end
+
+    def write_review
+        prompt.select("Thank you for taking the time to review an item, #{user.first_name}. Would you like to") do |menu|
+            menu.choice "Review a spirit from your Order History", -> {review_from_order_history}
+            menu.choice "Review a spirit you've had before", -> {review_any_but_purchases}
+            menu.choice "Return to Main Menu", -> {main_menu}
+            end
+    end
+
+    def review_from_order_history
+        system 'clear'
+        checked_out_orders = user.orders.where("checked_out = ?", true)
+        prev_purchased_items = checked_out_orders.map { |order| order.items }.flatten.uniq.sort_by(&:alcohol_type)
+        if !user.orders.find_by(checked_out: true)
+            prompt.select("Sorry, #{user.first_name}. It doesn't look like you've made any purchases yet. What would you like to do instead?") do |menu|
+            menu.choice "Review a spirit you've had before", -> {review_any_but_purchases}
+            menu.choice "Explore & Shop", -> {buy_alcs}
+            menu.choice "Return to Main Menu", -> {main_menu}
+            end
+        else 
+            puts "Below is a list of all spirits from your previous purchases, sorted by TYPE."
+            options = prev_purchased_items.map { |item| {"NAME: #{item.name}     TYPE: #{item.alcohol_type}    PRICE: $#{"%.2f" % item.price}    RATING: #{item.rating}" => item.id}}.unshift([{"Return to your cart" => "Return to your cart"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
+            choice = prompt.select("Please select the item you'd like to review.", options)
+                if choice == "Return to your cart"
+                    view_cart
+                elsif choice == "Return to Main Menu"
+                    main_menu
+                elsif Review.find_by(user_id: user.id, item_id: choice)
+                    prompt.select("Sorry, it looks like you've already left a review for #{Item.find(choice).name}. Would you like to") do |menu|
+                    menu.choice "Edit your review for #{Item.find(choice).name}", -> {edit_review(Item.find(choice))}
+                    menu.choice "Review a another spirit", -> {write_review}
+                    menu.choice "Explore & Shop", -> {buy_alcs}
+                    menu.choice "Return to Main Menu", -> {main_menu}
+                    end
+                else 
+                    create_a_rating(Item.find(choice))
+                end
+        end
+    end
+
+    def review_any_but_purchases
+        system 'clear'
+        checked_out_orders = user.orders.where("checked_out = ?", true)
+        prev_purchased_items = checked_out_orders.map { |order| order.items }.flatten.uniq
+        puts "Below is a list of all spirits excluding items from your previous purchases. The list is sorted by TYPE."
+        unpurchased_items = Item.all.select { |item| !prev_purchased_items.include?(item) }.sort_by(&:alcohol_type)
+        options = unpurchased_items.map { |item| {"NAME: #{item.name}     TYPE: #{item.alcohol_type}    PRICE: $#{"%.2f" % item.price}    RATING: #{item.rating}" => item.id}}.unshift([{"Return to your cart" => "Return to your cart"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
+        choice = prompt.select("Please select the item you'd like to review.", options)
+        if choice == "Return to your cart"
+            view_cart
+        elsif choice == "Return to Main Menu"
+            main_menu
+        elsif Review.find_by(user_id: user.id, item_id: choice)
+            prompt.select("Sorry, it looks like you've already left a review for #{Item.find(choice).name}. Would you like to") do |menu|
+            menu.choice "Edit your review for #{Item.find(choice).name}", -> {edit_review(Item.find(choice))}
+            menu.choice "Review a another spirit", -> {write_review}
+            menu.choice "Explore & Shop", -> {buy_alcs}
+            menu.choice "Return to Main Menu", -> {main_menu}
+            end
+        else 
+            create_a_rating(Item.find(choice))
+        end
+    end
+
+
+    def create_a_rating(item_inst)
+        rat = prompt.slider("How many ⭐️'s would you give #{item_inst.name}     ", min: 0, max: 5, step: 1)
+        puts "Please enter a review for #{item_inst.name}"
+        rev = gets.chomp
+        Review.create(user_id: user.id, item_id: item_inst.id, rating: rat, review: rev)
+        system 'clear'
+            prompt.select("Thank you for leaving a review for #{item_inst.name}! Would you like to") do |menu|
+                menu.choice "Edit your review for #{item_inst.name}", -> {edit_review(item_inst)}
+                menu.choice "Review a another spirit", -> {write_review}
+                menu.choice "Explore & Shop", -> {buy_alcs}
+                menu.choice "Return to Main Menu", -> {main_menu}
+            end
+    end
+
+
+    def leave_review(item_inst)
+        if Review.find_by(user_id: user.id, item_id: item_inst.id)
+            prompt.select("Sorry, it looks like you've already left a review for #{item_inst.name}. Would you like to") do |menu|
+            menu.choice "Edit your review for #{item_inst.name}", -> {edit_review(item_inst)}
+            menu.choice "Review a another spirit", -> {write_review}
+            menu.choice "Explore & Shop", -> {buy_alcs}
+            menu.choice "Return to Main Menu", -> {main_menu}
+            end
+        else 
+            create_a_rating(item_inst)
+        end
+    end
+
+    def edit_review(item)
+        #puts message with current review and rating OrderItem.where(user = user, item = item)
+        #prompt do you want to delete or nah?
+            #Yes
+                #ask for new rating 
+                #ask for new review
+                #update review
+                #prompt to continue
+            #No
+                #prompts to do something else
+    end
+
+
     def change_password
       system 'clear'
-      puts "Happy to help you change your PASSWORD, #{user.first_name}. Please enter your current password"
+      puts "Happy to help you change your password, #{user.first_name}. Please enter your current PASSWORD"
       answer = gets.chomp
 
           until answer == user.password do
-              puts "Sorry you're entered an incorrect password. Please re-enter your current password."
+              puts "Sorry you're entered an incorrect password. Please re-enter your current PASSWORD."
               answer = gets.chomp
           end
 
-      puts "Please enter your new password"
+      puts "Please enter your new PASSWORD"
       pass_word = gets.chomp 
       
           until pass_word.match?(/^\A\S{5,15}\Z$/) do
-              puts "Please enter a password 5-15 characters long."
+              puts "Please enter a PASSWORD 5-15 characters long."
               pass_word = gets.chomp
           end
 
-      puts "Please re-enter your new password"
+      puts "Please re-enter your new PASSWORD"
       pass_word2 = gets.chomp
     
         until pass_word == pass_word2 do
-            puts "Sorry the passwords did not match. Please enter a password."
+            puts "Sorry the passwords did not match. Please enter a PASSWORD."
             pass_word = gets.chomp 
               until pass_word.match?(/^\A\S{5,15}\Z$/) do
-                puts "Please enter a password 5-15 characters long."
+                puts "Please enter a PASSWORD 5-15 characters long."
                 pass_word = gets.chomp
               end
-            puts "Please re-enter your password"
+            puts "Please re-enter your PASSWORD"
             pass_word2 = gets.chomp
         end
         
@@ -102,11 +221,11 @@ class Application
 
     def change_name
         system 'clear'
-        puts "Happy to help you change your name in our system. Please enter your first name."
+        puts "Happy to help you change your name in our system. Please enter your FIRST NAME."
         answer = gets.chomp
   
         until answer.match?(/^\A([a-zA-Z]|-){2,30}\Z$/) do
-          puts "Please enter your first name using only letters or hyphens."
+          puts "Please enter your FIRST NAME using only letters or hyphens."
           firstName = gets.chomp
         end 
           
@@ -120,7 +239,7 @@ class Application
 
     def change_username
         system 'clear'
-        puts "Happy to help you change your USERNAME, #{user.first_name}. Please enter your a new username."
+        puts "Happy to help you change your username, #{user.first_name}. Please enter your a new USERNAME."
         puts "Enter 5-15 characters using letters, numbers, and underscores(_)"
         answer = gets.chomp
 
@@ -130,19 +249,19 @@ class Application
         end 
 
         until !User.find_by(username: answer) do
-            puts "Sorry, that username is already taken. Please enter another username."
+            puts "Sorry, that username is already taken. Please enter another USERNAME."
             answer = gets.chomp
                 if !answer.match?(/^\A\w{5,15}\Z$/) 
                     puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
                     answer = gets.chomp
                 elsif User.find_by(username: answer)
-                    puts "Sorry, that username is also taken. Please enter another username."
+                    puts "Sorry, that username is also taken. Please enter another USERNAME."
                     answer = gets.chomp
                 end 
         end
               
         user.update(username: answer)
-        prompt.select("Thank you, #{user.first_name}. Your username has been updated to #{user.username}. Please select what you'd like to do next") do |menu|
+        prompt.select("Thank you, #{user.first_name}. Your USERNAME has been updated to #{user.username}. Please select what you'd like to do next") do |menu|
           menu.choice "Return to Account Settings", -> {account_settings}
           menu.choice "Explore & Shop", -> {buy_alcs}
           menu.choice "Return to Main Menu", -> {main_menu}
@@ -151,11 +270,11 @@ class Application
 
     def delete_account
         system 'clear'
-          choice = prompt.select("So sad to see you go! 😭😭💔 Are you sure you want to delete your account, #{user.first_name}?", ["Yes", "No"]) 
+          choice = prompt.select("So sad to see you go! 😭😭💔 Are you sure you want to DELETE your account, #{user.first_name}?", ["Yes", "No"]) 
           
         if choice == "Yes"
-            puts "Confirming again that you would like to delete your account. All previous order history will no longer be available and the account will be deleted forever."
-            answer = prompt.select("Are you sure you want to delete your account, #{user.first_name}?", ["Yes", "No"]) 
+            puts "Confirming again that you would like to DELETE your account. All previous order history will no longer be available and the account will be deleted forever."
+            answer = prompt.select("Are you sure you want to DELETE your account, #{user.first_name}?", ["Yes", "No"]) 
                 if answer == "Yes"
                     system 'clear'
                     puts "Goodbye forever, #{user.first_name}. Hope you'll shop with us again soon."
@@ -228,6 +347,7 @@ class Application
                         puts "PRICE: $#{"%.2f" % item_inst.price}"
                     prompt.select("Would you like to:") do |menu|
                         menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                        menu.choice "Leave a review for #{item_inst.name}", -> {leave_review(item_inst)}
                         menu.choice "Search for another spirit by name", -> {search_by_name}
                         menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
                         menu.choice "Return to Main Menu", -> {main_menu}
@@ -275,6 +395,7 @@ class Application
                         puts "PRICE: $#{"%.2f" % item_inst.price}"
                         prompt.select("Would you like to:") do |menu|
                             menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                            menu.choice "Leave a review for #{item_inst.name}", -> {leave_review(item_inst)}
                             menu.choice "Explore additional #{alc}", -> {purchase_by_type(alc)}
                             menu.choice "Explore another spirit types", -> {search_by_type}
                             menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
@@ -325,6 +446,7 @@ class Application
                     puts "PRICE: $#{"%.2f" % item_inst.price}"
                     prompt.select("Would you like to:") do |menu|
                         menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                        menu.choice "Leave a review for #{item_inst.name}", -> {leave_review(item_inst)}
                         menu.choice "Explore additional spirits from the #{price_range_str} range.", -> {price_range_helper(price_range_str, price_range)}
                         menu.choice "Explore spirits from a different price range", -> {search_by_price}
                         menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
@@ -381,6 +503,7 @@ class Application
                         puts "PRICE: $#{"%.2f" % item_inst.price}"
                         prompt.select("Would you like to:") do |menu|
                             menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                            menu.choice "Leave a review for #{item_inst.name}", -> {leave_review(item_inst)}
                             menu.choice "Explore more spirits with a #{str} rating", -> {purchase_by_rating(str, range)}
                             menu.choice "Explore spirits from a different rating rnage", -> {search_by_rating}
                             menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
@@ -463,6 +586,7 @@ class Application
                     puts "PRICE: $#{"%.2f" % item_inst.price}"
                     prompt.select("Would you like to:") do |menu|
                         menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                        menu.choice "Leave a review for #{item_inst.name}", -> {leave_review(item_inst)}
                         menu.choice "Explore additional spirits from #{country}", -> {purchase_by_origin(country)}
                         menu.choice "Explore spirits from a different origin", -> {search_by_origin}
                         menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
@@ -496,6 +620,7 @@ class Application
                         puts "PRICE: $#{"%.2f" % item_inst.price}"
                         prompt.select("Would you like to:") do |menu|
                             menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
+                            menu.choice "Leave a review for #{item_inst.name}", -> {leave_review(item_inst)}
                             menu.choice "View all again", -> {view_all}
                             menu.choice "Explore spirits by a specific criteria", -> {buy_alcs}
                             menu.choice "Return to Main Menu", -> {main_menu}
@@ -527,23 +652,6 @@ class Application
     end 
 
 
-
-    def purchase_by_id
-        puts "Please enter the ID of the item you'd like to purchase."
-        answer = gets.chomp
-        item_inst = Item.find_by(id: answer)
-        
-            if item_inst
-                add_to_cart(item_inst)
-                #calls on 139 method
-            else 
-                system 'clear'
-                puts "Sorry there is no item by that ID. Try again."
-                sleep 2
-                self.purchase_by_id 
-            end
-    end
-#edit to order_inst if cart has items
     def view_cart
         system 'clear'
         if user.current_cart.items.count <= 0 

@@ -6,19 +6,27 @@ class User < ActiveRecord::Base
 
     def self.login_a_user
         puts "Welcome Back!"
-        puts "Please enter your username."
+        puts "Please enter your USERNAME."
         userName = gets.chomp
-        puts "Please enter your password."
+        puts "Please enter your PASSWORD."
         pass = gets.chomp
 
         user = User.find_by(username: userName, password: pass)
 
-        if user.nil?
-            TTY::Prompt.new.select("Sorry, nobody with that username and password combination exists. Would you like to") do |menu|
-                menu.choice "Login again", -> {login_a_user}
-                menu.choice "Register", -> {register_a_user}
-                menu.choice "Exit", -> {exit_app}
+        if !User.find_by(username: userName)
+            TTY::Prompt.new.select("Sorry, no account with that USERNAME exists. Would you like to") do |menu|
+            menu.choice "Login again", -> {login_a_user}
+            menu.choice "Register", -> {register_a_user}
+            menu.choice "Exit", -> {exit_app} 
             end
+            
+        elsif User.find_by(username: userName) && !user
+            TTY::Prompt.new.select("Sorry you've entered the wrong PASSWORD for USERNAME: #{userName}. Would you like to") do |menu|
+            menu.choice "Login again", -> {login_a_user}
+            menu.choice "Register", -> {register_a_user}
+            menu.choice "Exit", -> {exit_app}
+            end
+
         else
             user
         end
@@ -41,11 +49,11 @@ class User < ActiveRecord::Base
                     age = (Time.now.to_i - bday_sec).to_f / (365 * 24 * 60 * 60)
                     
                     if age >= 21.0
-                        puts "Thank you! Now please enter your first name:"
+                        puts "Thank you! Now please enter your FIRST NAME"
                         firstName = gets.chomp
 
                             until firstName.match?(/^\A([a-zA-Z]|-){2,30}\Z$/) do
-                                puts "Please re-enter your first name using only letters or hyphens."
+                                puts "Please re-enter your FIRST NAME using only letters or hyphens."
                                 firstName = gets.chomp
                             end 
 
@@ -61,34 +69,34 @@ class User < ActiveRecord::Base
                         user = User.find_by(username: user_name)
                           
                             until !User.find_by(username: user_name) do
-                                puts "Sorry, that username is already taken. Please enter another username."
+                                puts "Sorry, that username is already taken. Please enter another USERNAME."
                                 user_name = gets.chomp
                                     if !user_name.match?(/^\A\w{5,15}\Z$/) 
                                         puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
                                         user_name = gets.chomp
                                     elsif User.find_by(username: user_name)
-                                        puts "Sorry, that username is also taken. Please enter another username."
+                                        puts "Sorry, that username is also taken. Please enter another USERNAME."
                                         user_name = gets.chomp
                                     end 
                             end
 
-                        puts "And lastly, please enter your password"
+                        puts "And lastly, please enter a PASSWORD"
                         pass_word = gets.chomp 
                             until pass_word.match?(/^\A\S{5,15}\Z$/) do
-                                puts "Please enter a password 5-15 characters long."
+                                puts "Please enter a PASSWORD 5-15 characters long."
                                 pass_word = gets.chomp
                             end
-                        puts "Please re-enter your password"
+                        puts "Please re-enter your PASSWORD"
                         pass_word2 = gets.chomp
                  
                             until pass_word == pass_word2 do
-                                puts "Sorry the passwords did not match. Please enter a password."
+                                puts "Sorry the passwords did not match. Please enter a PASSWORD."
                                 pass_word = gets.chomp 
                                 until pass_word.match?(/^\A\S{5,15}\Z$/) do
-                                    puts "Please enter a password 5-15 characters long."
+                                    puts "Please enter a PASSWORD 5-15 characters long."
                                     pass_word = gets.chomp
                                 end
-                                puts "Please re-enter your password"
+                                puts "Please re-enter your PASSWORD"
                                 pass_word2 = gets.chomp
                             end
 
@@ -167,26 +175,5 @@ class User < ActiveRecord::Base
     def add_item_to_cart(item_inst)
         OrderItem.create(order: self.current_cart, item: item_inst)
     end
-
-    def remove_item_from_cart()
-    end
-
-    # def change_username(new_username)
-    #     if User.find_by(username: new_username)
-    #         puts 
-
-    #     until !User.find_by(username: user_name) do
-    #         puts "Sorry, that username is already taken. Please enter another username."
-    #         user_name = gets.chomp
-    #             if user_name.match?(/^\A\w{5,15}\Z$/) && !User.find_by(username: user_name) 
-    #                 puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
-    #                 user_name = gets.chomp
-    #             elsif User.find_by(username: user_name)
-    #                 puts "Sorry, that username is also taken. Please enter another username."
-    #                 user_name = gets.chomp
-    #             end 
-    #     end
-                          
-    # end
 
 end
