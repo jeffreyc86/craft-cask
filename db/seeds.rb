@@ -25,7 +25,7 @@ martha = User.create(first_name: "Martha", username: "b0ssbish", password: "aint
 #create orders
 #checked out orders
 16.times do 
-    Order.create(user_id: rand(16), checked_out: true)
+    Order.create(user_id: rand(1..16), checked_out: true)
 end
 #current carts
 Order.create(user_id: 1, checked_out: false)
@@ -104,128 +104,128 @@ Item.create(name: "Highland Park Twisted Tattoo | 750 ml", alcohol_type: "Whiske
 
 #creat at orderitems
 50.times do
-OrderItem.create(order_id: rand(16), item_id: rand(57))
+OrderItem.create(order_id: rand(1..16), item_id: rand(1..57))
 end
 
 40.times do
-OrderItem.create(order_id: rand(17..30), item_id: rand(57))
+OrderItem.create(order_id: rand(17..30), item_id: rand(1..57))
 end
 
 #create reviews
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Loved this! Is great neat or on the rocks.")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "Loved this! Is great neat or on the rocks.")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Went perfectly with the cocktails I was making")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "Went perfectly with the cocktails I was making")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "This shit slapppssssss")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "This shit slapppssssss")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Just WOW!!!! Definite buy")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "Just WOW!!!! Definite buy")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Such a nice finish!")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "Such a nice finish!")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Couldn't stop drinking. Might b drunkkkkkkskfdgt43efsd")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "Couldn't stop drinking. Might b drunkkkkkkskfdgt43efsd")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "Purchasing the remaining stock right now!")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "Purchasing the remaining stock right now!")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 5, review: "So delicious! Transported me right back to pre-COVID")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 5, review: "So delicious! Transported me right back to pre-COVID")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Tasted great, but would've been better if we could've drank it outside in a bar...without masks")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 4, review: "Tasted great, but would've been better if we could've drank it outside in a bar...without masks")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Pretty good")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 4, review: "Pretty good")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Reminded me of a drink I had back in Rome. Quite tasty")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 4, review: "Reminded me of a drink I had back in Rome. Quite tasty")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "OMG so yumm!")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 4, review: "OMG so yumm!")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Almost perfect. Wish it went down a bit smoother.")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 4, review: "Almost perfect. Wish it went down a bit smoother.")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 4, review: "Loved the design on the bottle. Taste was pretty good.")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 4, review: "Loved the design on the bottle. Taste was pretty good.")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "Not my fav but still a good drink")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 3, review: "Not my fav but still a good drink")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "Ehhh I've had better")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 3, review: "Ehhh I've had better")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "My partner got mad because I purchased the wrong version. Had to sleep on the couch")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 3, review: "My partner got mad because I purchased the wrong version. Had to sleep on the couch")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 3, review: "Got pretty hammered, but woke up with the worst hangover")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 3, review: "Got pretty hammered, but woke up with the worst hangover")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Steer clear! Gave me the worst hangover")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 2, review: "Steer clear! Gave me the worst hangover")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Not the best...")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 2, review: "Not the best...")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Taste is def not worth the price")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 2, review: "Taste is def not worth the price")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 2, review: "Couldn't get it down but my friend loved it")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 2, review: "Couldn't get it down but my friend loved it")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "Not a fan")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 1, review: "Not a fan")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "I'd barely call this drinkable")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 1, review: "I'd barely call this drinkable")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "Never buying again")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 1, review: "Never buying again")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 1, review: "Love most of the spirits on here but this one was a bummer")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 1, review: "Love most of the spirits on here but this one was a bummer")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 0, review: "THE WORST!!!!")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 0, review: "THE WORST!!!!")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 0, review: "Hated this")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 0, review: "Hated this")
 end
 
 3.times do
-Review.create(user_id: rand(16), item_id: rand(57), rating: 0, review: "Wish I could get my money back. This definitely was not worth it")
+Review.create(user_id: rand(1..16), item_id: rand(1..57), rating: 0, review: "Wish I could get my money back. This definitely was not worth it")
 end
 
 puts "Data has been seeded!"
