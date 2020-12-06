@@ -654,7 +654,7 @@ class Application
     
     def search_by_origin
         system 'clear'
-        choice = prompt.select("Please select a country to see all available spirits.", Item.all.pluck(:origin).uniq)
+        choice = prompt.select("Please select a country to see all available spirits.", Item.all.sort_by(&:origin).pluck(:origin).uniq)
         purchase_by_origin(choice)
     end
         
