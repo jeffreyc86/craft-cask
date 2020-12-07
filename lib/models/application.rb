@@ -1,3 +1,6 @@
+require 'rainbow'
+using Rainbow
+
 class Application
 
     attr_reader :prompt
@@ -8,16 +11,16 @@ class Application
     end
 
     def welcome 
-        puts "Hi! Welcome to APP_NAME. Discover your new favorite spirit."
+        system 'clear'
+        puts Rainbow(File.read("lib/wordart/app_banner.txt")).springgreen.bright
+        puts "Welcome to CRAFT CASK! Enter and discover your new favorite spirits."
     end
 
     def ask_user_for_login_or_register
-        # # app name display
-        puts File.read("lib/wordart/app_banner.txt")
         prompt.select("Would you like to register or login?") do |menu|
             menu.choice "Login", -> {login_helper}
             menu.choice "Register", -> {register_helper}
-            menu.choice "Alcohol is not for me", -> {exit_app}
+            menu.choice "Alcohol is Not for Me", -> {exit_app}
         end
     end
 
@@ -31,22 +34,100 @@ class Application
 
     def main_menu
         user.reload
-        # Gets the most up to date info about the user
-        
         system 'clear'
-        # "clears" the terminal
-
-        # sleep 5
-        # Wait 5 seconds and then execute
         prompt.select("Welcome, #{user.first_name}! What do you want to do?") do |menu|
             menu.choice "Explore & Shop", -> {buy_alcs}
             menu.choice "View Your Cart", -> {view_cart}
-            menu.choice "View Order History", -> {smell_you_later}
+            menu.choice "View Order History", -> {view_order_history}
             menu.choice "Review Your Favorites", -> {write_review}
             menu.choice "View Account Settings", -> {account_settings}
             menu.choice "Exit App", -> {exit_app}
         end
     end
+
+    def view_order_history 
+        system 'clear'
+        if user.order_history.count == 0 
+            prompt.select("Sorry, #{user.first_name}, you don't have any past orders. What do you want to do?") do |menu|
+            menu.choice "Explore & Shop", -> {buy_alcs}
+            menu.choice "Return to Main Menu", -> {main_menu}
+            end
+        else          
+            list_of_order_ids = user.order_history.map {|order| order.id}
+            options = user.order_history.each_with_index.map {|order, index| {"#{index+1}) PURCHASE DATE: #{purchase_date(order)}   |   ORDER TOTAL: $#{order_total(order)}   |   ITEM COUNT: #{order_count(order)}" => order.id}}.unshift([{"Return to Main Menu" => "Return to Main Menu"}]).flatten
+                        system 'clear'
+            choice = prompt.select("Would You Like To:", options)
+            if choice == "Return to Main Menu"
+                main_menu
+            else
+                order_details(choice)                                             
+            end 
+            
+        end  
+    end     
+    
+    def order_details(choice)
+        system 'clear'
+            order_inst = Order.find(choice)
+            puts "Purchase Date: #{purchase_date(order_inst)}  |  Order Total: $#{order_total(order_inst)}  |  Number of Items: #{order_count(order_inst)}"
+            puts item_list = order_inst.items.each_with_index.map {|item, index| "#{index+1}) NAME: #{item.name}    TYPE: #{item.alcohol_type}    ORIGIN: #{item.origin}     PRICE: $#{"%.2f" % item.price}"}
+            multi_select_menu = order_inst.items.map {|item| {"NAME: #{item.name}    TYPE: #{item.alcohol_type}    ORIGIN: #{item.origin}     PRICE: $#{"%.2f" % item.price}" => item.id}}.uniq
+            menu = [{"Re-purchase Item(s) From This Order" => "Re-purchase Item(s) From This Order"}, {"Return to Order History" => "Return to Order History"},{"Purchase Other Items" => "Purchase Other Items"},{"Return to Main Menu" => "Return to Main Menu"}].flatten                
+                selection = prompt.select("Would You Like To:", menu)
+                        if selection == "Return to Order History"
+                            view_order_history
+                        elsif selection == "Purchase Other Items"
+                            buy_alcs
+                        elsif selection == "Return to Main Menu"
+                            main_menu
+                        elsif selection == "Re-purchase Item(s) From This Order"
+                            buy_items_again(choice, multi_select_menu) 
+                        end 
+    end 
+    
+    def buy_items_again(choice, multi_select_menu)
+            system 'clear'
+            items_to_buy_again = prompt.multi_select("Select The Item(s) You'd Like To Re-purchase (Use Spacebar to choose items, then press ENTER to add items to cart).  If no items are selected and you press ENTER, you will be returned back to your Order History.", multi_select_menu)
+            if items_to_buy_again == [] 
+                view_order_history
+            else 
+                item_list = items_to_buy_again.map {|item_id| Item.find(item_id)} 
+                item_list.map {|item| user.add_item_to_cart(item)}
+                item_insts = item_list.map {|item| "#{item.name}"}.join(", ")
+                item_array = item_list.map {|item| "#{item.name}"}
+                prompt.select ("#{item_insts} #{plural_or_not(item_array)} been added to your cart! What would you like to do next:") do |menu|
+                menu.choice "View Your Cart", -> {view_cart}
+                menu.choice "Purchase Additional Items from this Order", -> {buy_items_again(choice, multi_select_menu)}
+                menu.choice "Check Out", -> {check_out}
+                menu.choice "Return to Main menu ", -> {main_menu}                                        
+                end
+            end
+    end 
+
+    def plural_or_not(item_inst)   
+        if item_inst.size == 1
+            "has"
+        else           
+            "have"
+        end 
+    end 
+
+    def order_total(order_instance)
+        long_price = order_instance.items.sum {|item| item.price } 
+        short_price = "%.2f" % long_price
+        short_price   
+    end 
+
+    def order_count(order_inst)
+        count = order_inst.items.count
+        count  
+    end 
+
+    def purchase_date(order_int)
+        timestamp = order_int.updated_at 
+        purchased_on = timestamp.strftime("%B %d, %Y at %I:%M %p")
+        purchased_on
+    end 
 
     def account_settings
         system 'clear'
@@ -64,7 +145,7 @@ class Application
     def view_reviews
         if !Review.find_by(user_id: user.id)
             prompt.select("Sorry, #{user.first_name}. It looks like you haven't made any reviews yet. What do you want to do?") do |menu|
-            menu.choice "Review an item", -> {write_review}
+            menu.choice "Review an Item", -> {write_review}
             menu.choice "View Your Cart", -> {view_cart}
             menu.choice "Return to Account Settings", -> {account_settings}
             menu.choice "Return to Main Menu", -> {main_menu}
@@ -78,7 +159,7 @@ class Application
                 puts "  Your REVIEW: #{review.review}"
             end
                 prompt.select("Would you like to") do |menu|
-                menu.choice "Edit a review", -> {edit_from_prev_reviews}
+                menu.choice "Edit a Review", -> {edit_from_prev_reviews}
                 menu.choice "Return to Account Settings", -> {account_settings}
                 menu.choice "Return to Main Menu", -> {main_menu}
                 end
@@ -88,8 +169,8 @@ class Application
     def write_review
         system 'clear'
         prompt.select("Thank you for taking the time to review an item, #{user.first_name}. Would you like to") do |menu|
-            menu.choice "Review a spirit from your Order History", -> {review_from_order_history}
-            menu.choice "Review additional spirits", -> {review_any_spirit}
+            menu.choice "Review a Spirit from your Order History", -> {review_from_order_history}
+            menu.choice "Review Additional Spirits", -> {review_any_spirit}
             menu.choice "Return to Main Menu", -> {main_menu}
             end
     end
@@ -100,13 +181,13 @@ class Application
         prev_purchased_items = checked_out_orders.map { |order| order.items }.flatten.uniq.sort_by(&:alcohol_type)
         if !user.orders.find_by(checked_out: true)
             prompt.select("Sorry, #{user.first_name}. It doesn't look like you've made any purchases yet. What would you like to do instead?") do |menu|
-            menu.choice "Review additional spirits", -> {review_any_spirit}
+            menu.choice "Review Additional Spirits", -> {review_any_spirit}
             menu.choice "Explore & Shop", -> {buy_alcs}
             menu.choice "Return to Main Menu", -> {main_menu}
             end
         else 
             puts "Below is a list of all spirits from your previous purchases, sorted by TYPE."
-            options = prev_purchased_items.map { |item| {"NAME: #{item.name}     TYPE: #{item.alcohol_type}    ORIGIN: #{item.origin}     PRICE: $#{"%.2f" % item.price}    RATING: #{item.rating}" => item.id}}.unshift([{"Return to your cart" => "Return to your cart"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
+            options = prev_purchased_items.map { |item| {"NAME: #{item.name}     TYPE: #{item.alcohol_type}    ORIGIN: #{item.origin}     PRICE: $#{"%.2f" % item.price}    RATING: #{item.rating}" => item.id}}.unshift([{"Return to Your Cart" => "Return to your cart"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
             choice = prompt.select("Please select the item you'd like to REVIEW", options)
                 if choice == "Return to your cart"
                     view_cart
@@ -115,7 +196,7 @@ class Application
                 elsif Review.find_by(user_id: user.id, item_id: choice)
                     prompt.select("Sorry, it looks like you've already left a review for #{Item.find(choice).name}. Would you like to") do |menu|
                     menu.choice "Edit your REVIEW for #{Item.find(choice).name}", -> {edit_review(Item.find(choice))}
-                    menu.choice "Review another spirit", -> {write_review}
+                    menu.choice "Review Another Spirit", -> {write_review}
                     menu.choice "Explore & Shop", -> {buy_alcs}
                     menu.choice "Return to Main Menu", -> {main_menu}
                     end
@@ -128,8 +209,8 @@ class Application
     def review_any_spirit
         system 'clear'
             prompt.select("Would you like to") do |menu|
-            menu.choice "Review a spirit by NAME", -> {review_by_name}
-            menu.choice "Review a spirit by TYPE", -> {review_using_type}
+            menu.choice "Review a Spirit by NAME", -> {review_by_name}
+            menu.choice "Review a Spirit by TYPE", -> {review_using_type}
             menu.choice "Return to Main Menu", -> {main_menu}
             end
     end
@@ -140,7 +221,7 @@ class Application
             alcohols = Item.where("name LIKE ?", "%#{answer}%")
             if Item.find_by("name LIKE ?", "%#{answer}%")
                 aoa_alc_info = alcohols.map { |alco| [alco.id, alco.name, alco.price, alco.alcohol_type, alco.origin, alco.rating] } 
-                options = aoa_alc_info.map { |arr| {"NAME: #{arr[1]}    PRICE: $#{"%.2f" % arr[2]}    TYPE: #{arr[3]}    ORIGIN: #{arr[4]}     RATING: #{arr[5]}" => arr[0]} } << [{"Try a different name" => "Try a different name"}, {"Search for a spirit to review by TYPE" => "Search for a spirit to review by TYPE"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+                options = aoa_alc_info.map { |arr| {"NAME: #{arr[1]}    PRICE: $#{"%.2f" % arr[2]}    TYPE: #{arr[3]}    ORIGIN: #{arr[4]}     RATING: #{arr[5]}" => arr[0]} } << [{"Try a Different Name" => "Try a different name"}, {"Search for a Spirit to Review by TYPE" => "Search for a spirit to review by TYPE"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
                 choice = prompt.select("These were the following results we found. Please select a spirit to review", options) 
                 if choice == "Try a different name"
                     review_by_name
@@ -150,8 +231,8 @@ class Application
                     main_menu
                 elsif Review.find_by(user_id: user.id, item_id: choice)
                     prompt.select("Sorry, it looks like you've already left a review for #{Item.find(choice).name}. Would you like to") do |menu|
-                    menu.choice "Edit your review for #{Item.find(choice).name}", -> {edit_review(Item.find(choice))}
-                    menu.choice "Review another spirit", -> {write_review}
+                    menu.choice "Edit Your Review for #{Item.find(choice).name}", -> {edit_review(Item.find(choice))}
+                    menu.choice "Review Another Spirit", -> {write_review}
                     menu.choice "Explore & Shop", -> {buy_alcs}
                     menu.choice "Return to Main Menu", -> {main_menu}
                     end
@@ -160,8 +241,8 @@ class Application
                 end
             else
                 prompt.select("Sorry we couldn't find anything resembling that name. Would you like to:") do |menu|
-                    menu.choice "Try a different name", -> {review_by_name}
-                    menu.choice "Search for a spirit to review by TYPE", -> {review_using_type}
+                    menu.choice "Try a Different Name", -> {review_by_name}
+                    menu.choice "Search for a Spirit to Review by TYPE", -> {review_using_type}
                     menu.choice "Return to Main Menu", -> {main_menu}
                 end
             end
@@ -177,7 +258,7 @@ class Application
                 system 'clear'
                 alcohols = Item.where("alcohol_type = ?", alc).sort_by(&:origin)
                 aoa_alc_info = alcohols.map { |alco| [alco.id, alco.name, alco.price, alco.origin, alco.rating] } 
-                options = aoa_alc_info.map { |arr| {"NAME: #{arr[1]}    PRICE: $#{"%.2f" % arr[2]}    ORIGIN: #{arr[3]}     RATING: #{arr[4]}" => arr[0]} }.unshift([{"Return to your cart" => "Return to your cart"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
+                options = aoa_alc_info.map { |arr| {"NAME: #{arr[1]}    PRICE: $#{"%.2f" % arr[2]}    ORIGIN: #{arr[3]}     RATING: #{arr[4]}" => arr[0]} }.unshift([{"Return to Your Cart" => "Return to your cart"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
                 puts "Below is a list of all #{alc}s, sorted by ORIGIN."
                 choice = prompt.select("Please select the spirit you'd like to REVIEW", options)
                     if choice == "Return to your cart"
@@ -187,7 +268,7 @@ class Application
                     elsif Review.find_by(user_id: user.id, item_id: choice)
                         prompt.select("Sorry, it looks like you've already left a review for #{Item.find(choice).name}. Would you like to") do |menu|
                         menu.choice "Edit your REVIEW for #{Item.find(choice).name}", -> {edit_review(Item.find(choice))}
-                        menu.choice "Review another spirit", -> {write_review}
+                        menu.choice "Review Another Spirit", -> {write_review}
                         menu.choice "Explore & Shop", -> {buy_alcs}
                         menu.choice "Return to Main Menu", -> {main_menu}
                         end
@@ -204,7 +285,7 @@ class Application
         system 'clear'
             prompt.select("Thank you for leaving a review for #{item_inst.name}! Would you like to") do |menu|
                 menu.choice "Edit your REVIEW for #{item_inst.name}", -> {edit_review(item_inst)}
-                menu.choice "Review another spirit", -> {write_review}
+                menu.choice "Review Another Spirit", -> {write_review}
                 menu.choice "Explore & Shop", -> {buy_alcs}
                 menu.choice "Return to Main Menu", -> {main_menu}
             end
@@ -214,8 +295,8 @@ class Application
     def leave_review(item_inst)
         if Review.find_by(user_id: user.id, item_id: item_inst.id)
             prompt.select("Sorry, it looks like you've already left a review for #{item_inst.name}. Would you like to") do |menu|
-            menu.choice "Edit your review for #{item_inst.name}", -> {edit_review(item_inst)}
-            menu.choice "Review another spirit", -> {write_review}
+            menu.choice "Edit Your Review for #{item_inst.name}", -> {edit_review(item_inst)}
+            menu.choice "Review Another Spirit", -> {write_review}
             menu.choice "Explore & Shop", -> {buy_alcs}
             menu.choice "Return to Main Menu", -> {main_menu}
             end
@@ -239,13 +320,13 @@ class Application
                     if y_or_n == "Yes"
                         rev.destroy
                         prompt.select("Your REVIEW for #{item.name} has been DELETED. Please select what you'd like to do next") do |menu|
-                        menu.choice "Review additional spirits", -> {write_review}
+                        menu.choice "Review Additional Spirits", -> {write_review}
                         menu.choice "Explore & Shop", -> {buy_alcs}
                         menu.choice "Return to Main Menu", -> {main_menu}
                         end
                     else
                         prompt.select("Your REVIEW for #{item.name} WILL NOT be deleted. Please select what you'd like to do next") do |menu|
-                        menu.choice "Review additional spirits", -> {write_review}
+                        menu.choice "Review Additional Spirits", -> {write_review}
                         menu.choice "Explore & Shop", -> {buy_alcs}
                         menu.choice "Return to Main Menu", -> {main_menu}
                         end  
@@ -257,7 +338,7 @@ class Application
                 rev.update(rating: rat, review: desc)
 
                 prompt.select("Thank you, #{user.first_name}. Your REVIEW for #{item.name} has been updated. Please select what you'd like to do next") do |menu|
-                menu.choice "Review additional spirits", -> {write_review}
+                menu.choice "Review Additional Spirits", -> {write_review}
                 menu.choice "Explore & Shop", -> {buy_alcs}
                 menu.choice "Return to Main Menu", -> {main_menu}
                 end
@@ -377,7 +458,7 @@ class Application
                     puts "Goodbye forever, #{user.first_name}. Hope you'll shop with us again soon."
                     user.destroy
                     prompt.select("What you'd like to do next") do |menu|
-                    menu.choice "Register a new account", -> {register_after_deletion}
+                    menu.choice "Register a New Account", -> {register_after_deletion}
                     menu.choice "Exit App", -> {exit_app}
                     end
                 else
@@ -412,21 +493,21 @@ class Application
             menu.choice "Search by ORIGIN", -> {search_by_origin}
             menu.choice "Search by PRICE", -> {search_by_price}
             menu.choice "Search by RATING", -> {search_by_rating}
-            menu.choice "View all", -> {view_all}
+            menu.choice "View ALL", -> {view_all}
         end
         
     end
 
     def search_by_name
-        puts "What is the name of the spirit you are looking?"
+        puts "What is the name of the spirit you are looking for?"
         answer = gets.chomp 
-        alcohols = Item.where("name LIKE ?", "%#{answer}%")
+        alcohols = Item.where("name LIKE ?", "%#{answer}%").sort_by(&:alcohol_type)
         if Item.find_by("name LIKE ?", "%#{answer}%")
             aoa_alc_info = alcohols.map { |alco| [alco.id, alco.name, alco.price, alco.alcohol_type, alco.origin, alco.rating] } 
             options = aoa_alc_info.map do |arr| 
                 {"NAME: #{arr[1]}    PRICE: $#{"%.2f" % arr[2]}    TYPE: #{arr[3]}    ORIGIN: #{arr[4]}     RATING: #{arr[5]}" => arr[0]}
-            end << [{"Try a different name" => "Try a different name"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
-            choice = prompt.select("These were the following results we found. Please select an option", options) 
+            end << [{"Try a Different Name" => "Try a different name"}, {"Search by a Different Critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+            choice = prompt.select("These were the following results we found, sorted by TYPE. Please select an option", options) 
                 if choice == "Try a different name"
                     search_by_name
                 elsif choice == "Search by a different critera"
@@ -446,15 +527,15 @@ class Application
                         menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
                         menu.choice "View REVIEWS for #{item_inst.name}", -> {view_all_reviews(item_inst)}
                         menu.choice "Leave a REVIEW for #{item_inst.name}", -> {leave_review(item_inst)}
-                        menu.choice "Search for another spirit by name", -> {search_by_name}
-                        menu.choice "Explore spirits by a different criteria", -> {buy_alcs}
+                        menu.choice "Search for Another Spirit by Name", -> {search_by_name}
+                        menu.choice "Explore Spirits by a Different Criteria", -> {buy_alcs}
                         menu.choice "Return to Main Menu", -> {main_menu}
                     end 
                 end
         else
             prompt.select("Sorry we couldn't find anything resembling that name. Would you like to:") do |menu|
-                menu.choice "Try a different name", -> {search_by_name}
-                menu.choice "Search by a different critera", -> {buy_alcs}
+                menu.choice "Try a Different Name", -> {search_by_name}
+                menu.choice "Search by a Different Critera", -> {buy_alcs}
                 menu.choice "Return to Main Menu", -> {main_menu}
             end 
         end 
@@ -462,23 +543,22 @@ class Application
 
     def search_by_type
         system 'clear'
-
         choice = prompt.select("Which type of alcohol were you looking for?", Item.all.pluck(:alcohol_type).uniq)
         purchase_by_type(choice)
     end
 
         def purchase_by_type(alc)
             system 'clear'
-            alcohols = Item.where("alcohol_type = ?", alc)
+            alcohols = Item.where("alcohol_type = ?", alc).sort_by(&:origin)
             aoa_alc_info = alcohols.map { |alco| [alco.id, alco.price, alco.name, alco.origin, alco.rating] } 
-            options = aoa_alc_info.map { |arr| {"PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}     RATING: #{arr[4]}" => arr[0]} } << [{"Search for a different type of spirt" => "Search for a different type of spirt"}, {"Search by a different critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
-                # puts File.read("lib/wordart/#{alc}.txt")
-                puts "This is a list of our available #{alc}s."
+            options = aoa_alc_info.map { |arr| {"PRICE: $#{"%.2f" % arr[1]}    NAME: #{arr[2]}    ORIGIN: #{arr[3]}     RATING: #{arr[4]}" => arr[0]} } << [{"Search for a Different Type of Spirit" => "Search for a different type of spirit"}, {"Search by a Different Critera" => "Search by a different critera"}, {"Return to Main Menu" => "Return to Main Menu"}].flatten
+                puts Rainbow(File.read("lib/wordart/#{alc}.txt")).lightskyblue.bright
+                puts "Below is a list of our available #{alc}s, sorted by ORIGIN."
                 choice = prompt.select("Please select the item you would like to learn more about.", options)
             
                 if choice == "Return to Main Menu"
                     main_menu
-                elsif choice == "Search for a different type of spirt"
+                elsif choice == "Search for a different type of spirit"
                     search_by_type
                 elsif choice == "Search by a different critera"
                     buy_alcs
@@ -777,7 +857,7 @@ class Application
             user.view_current_cart
             prompt.select("Your total so far is $#{user.current_cart_total}. Would you like to:") do |menu|
             menu.choice "Check Out", -> {already_viewed_checkout}
-            menu.choice "Remove an item from your cart", -> {remove_item}
+            menu.choice "Remove item(s) from your cart", -> {remove_item}
             menu.choice "Add more items to your cart", -> {buy_alcs}
             menu.choice "Return to Main Menu", -> {main_menu}
             menu.choice "Exit App", -> {exit_app} 
@@ -806,7 +886,7 @@ class Application
         # if user.current_cart.items.count == 0
             #puts "message"
         # else
-        options = user.current_cart.items.collect {|item| {"NAME: #{item.name} PRICE: $#{item.price} RATING: #{item.rating}" => item.id}}
+        options = user.current_cart.items.collect {|item| {"NAME: #{item.name} PRICE: $#{"%.2f" % item.price} RATING: #{item.rating}" => item.id}}
         choice = prompt.multi_select("Which item(s) would you like to remove? (Use Spacebar to choose items, then press ENTER to complete removal).  If no items are selected and you press ENTER, you will be returned back to your cart.", options)
         oi_insts_to_delete = choice.map { |id_for_item| user.current_cart.order_items.find_by(item_id: id_for_item) }
         item_names = choice.collect {|id| Item.find(id).name}
@@ -814,8 +894,9 @@ class Application
             if choice == []
                 view_cart
             else 
-                prompt.select("These item(s) have been removed from your cart: #{item_names[0]}\n\ Your current total is now $#{user.current_cart_total}. What would you like to do next:") do |menu|
+                prompt.select("#{item_names.join(', ')} #{plural_or_not(item_names)} been removed from your cart.\n\ Your current total is now $#{user.current_cart_total}. What would you like to do next:") do |menu|
                     menu.choice "Remove another item", -> {remove_item}
+                    menu.choice "Return to your cart", -> {view_cart}
                     menu.choice "Add more items to your cart", -> {buy_alcs}
                     menu.choice "Return to Main Menu", -> {main_menu}
                     menu.choice "Exit App", -> {exit_app} 
@@ -824,7 +905,9 @@ class Application
     end
 
     def exit_app
-        puts "Peace out homie!"
+        system 'clear'
+        puts Rainbow(File.read("lib/wordart/til_we_drink.txt")).tomato.bright
+        puts Rainbow(File.read("lib/wordart/exit_app.txt")).teal.bright
         exit
         #edit exit_app class method in user
     end

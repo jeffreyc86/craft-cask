@@ -1,3 +1,6 @@
+require 'rainbow'
+using Rainbow
+
 class User < ActiveRecord::Base
 
     has_many :reviews
@@ -33,7 +36,9 @@ class User < ActiveRecord::Base
     end
 
         def self.exit_app
-            puts "Peace out homie!"
+            system 'clear'
+            puts Rainbow(File.read("lib/wordart/til_we_drink.txt")).tomato.bright
+            puts Rainbow(File.read("lib/wordart/exit_app.txt")).teal.bright
             exit
         end
 
@@ -104,8 +109,10 @@ class User < ActiveRecord::Base
                         user.update(age: age.to_i)
                         user
                     else
-                        # puts File.read("lib/wordart/stop_uad.txt")
-                        puts "Sorry, please return when you are 21."
+                        puts Rainbow(File.read("lib/wordart/stop_uad.txt")).red.bright
+                        puts Rainbow(File.read("lib/wordart/think_before.txt")).cyan.bright
+                        puts "Use your brain wisely. Your time will come. Don't rush."
+                        puts "We'll meet again when you are 21."
                         exit 
                     end
             else
@@ -130,7 +137,6 @@ class User < ActiveRecord::Base
         display_cart
         
         current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
-        binding.pry
         puts "Your total today is $#{current_cart_total}. Let's check out!"
         current_cart.update(checked_out: true)
     end
@@ -155,12 +161,6 @@ class User < ActiveRecord::Base
             puts "Sorry, unfortunately #{item.name} is currently out of stock. It has been removed."
         end
     end
-
-    # def remove_from_current_cart(item_inst) 
-    #     #takes in id and removes item from cart of user 
-    #     user.current_cart.orderitems.find_by(order_item_id: id).destroy 
-    # end 
-
 
     def current_cart_total 
         "%.2f" % self.current_cart.items.sum(:price)
