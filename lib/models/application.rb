@@ -357,36 +357,32 @@ class Application
             end
     end
 
+    def password_prompt(message, mask= '*')
+        ask(message) { |q| q.echo = mask }
+    end
+
     def change_password
       system 'clear'
-      puts "Happy to help you change your password, #{user.first_name}. Please enter your current PASSWORD"
-      answer = gets.chomp
+        answer = password_prompt("Happy to help you change your password, #{user.first_name}. Please enter your current PASSWORD")
 
           until answer == user.password do
-              puts "Sorry you're entered an incorrect password. Please re-enter your current PASSWORD."
-              answer = gets.chomp
+              answer = password_prompt("Sorry you're entered an incorrect password. Please re-enter your current PASSWORD.")
           end
 
-      puts "Please enter your new PASSWORD"
-      pass_word = gets.chomp 
-      
+        pass_word = password_prompt("Please enter your new PASSWORD")
+    
           until pass_word.match?(/^\A\S{5,15}\Z$/) do
-              puts "Please enter a PASSWORD 5-15 characters long."
-              pass_word = gets.chomp
+            pass_word = password_prompt("Please enter a PASSWORD 5-15 characters long.")
           end
 
-      puts "Please re-enter your new PASSWORD"
-      pass_word2 = gets.chomp
+        pass_word2 = password_prompt("Please re-enter your new PASSWORD")
     
         until pass_word == pass_word2 do
-            puts "Sorry the passwords did not match. Please enter a PASSWORD."
-            pass_word = gets.chomp 
+            pass_word = password_prompt("Sorry the passwords did not match. Please enter a new PASSWORD.")
               until pass_word.match?(/^\A\S{5,15}\Z$/) do
-                puts "Please enter a PASSWORD 5-15 characters long."
-                pass_word = gets.chomp
+                pass_word = password_prompt("Please enter a PASSWORD 5-15 characters long.")
               end
-            puts "Please re-enter your PASSWORD"
-            pass_word2 = gets.chomp
+            pass_word2 = password_prompt("Please re-enter your new PASSWORD")
         end
         
         user.update(password: pass_word)

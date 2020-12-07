@@ -1,3 +1,4 @@
+require 'highline/import'
 require 'rainbow'
 using Rainbow
 
@@ -7,12 +8,15 @@ class User < ActiveRecord::Base
     has_many :orders
     has_many :order_items, through: :orders
 
+    def self.password_prompt(message, mask= '*')
+        ask(message) { |q| q.echo = mask }
+    end
+
     def self.login_a_user
         puts "Welcome Back!"
         puts "Please enter your USERNAME."
         userName = gets.chomp
-        puts "Please enter your PASSWORD."
-        pass = gets.chomp
+        pass = password_prompt("Please enter your PASSWORD.")
 
         user = User.find_by(username: userName, password: pass)
 
@@ -85,24 +89,20 @@ class User < ActiveRecord::Base
                                     end 
                             end
 
-                        puts "And lastly, please enter a PASSWORD 5-15 characters long"
-                        pass_word = gets.chomp 
+                        pass_word = password_prompt("And lastly, please enter a PASSWORD 5-15 characters long")
+
                             until pass_word.match?(/^\A\S{5,15}\Z$/) do
-                                puts "Please enter a PASSWORD 5-15 characters long."
-                                pass_word = gets.chomp
+                                pass_word = password_prompt("Please enter a PASSWORD 5-15 characters long.")
                             end
-                        puts "Please re-enter your PASSWORD"
-                        pass_word2 = gets.chomp
-                 
+
+                        pass_word2 = password_prompt("Please re-enter your PASSWORD")
+
                             until pass_word == pass_word2 do
-                                puts "Sorry the passwords did not match. Please enter a PASSWORD."
-                                pass_word = gets.chomp 
-                                until pass_word.match?(/^\A\S{5,15}\Z$/) do
-                                    puts "Please enter a PASSWORD 5-15 characters long."
-                                    pass_word = gets.chomp
-                                end
-                                puts "Please re-enter your PASSWORD"
-                                pass_word2 = gets.chomp
+                                pass_word = password_prompt("Sorry the passwords did not match. Please enter a PASSWORD.")
+                                    until pass_word.match?(/^\A\S{5,15}\Z$/) do
+                                        pass_word = password_prompt("Please enter a PASSWORD 5-15 characters long.")
+                                    end
+                                pass_word2 = password_prompt("Please re-enter your PASSWORD")
                             end
 
                         user = User.create(first_name: firstName.capitalize, username: user_name, password: pass_word)
