@@ -38,6 +38,7 @@ class Application
     def main_menu
         user.reload
         system 'clear'
+        puts Rainbow(File.read("lib/wordart/main_menu.txt")).mediumspringgreen.bright
         prompt.select("Welcome, #{user.first_name}! What do you want to do?") do |menu|
             menu.choice "Explore & Shop", -> {buy_alcs}
             menu.choice "View Your Cart", -> {view_cart}
@@ -50,15 +51,16 @@ class Application
 
     def view_order_history 
         system 'clear'
+        puts Rainbow(File.read("lib/wordart/order_history.txt")).mediumspringgreen.bright
+
         if user.order_history.count == 0 
             prompt.select("Sorry, #{user.first_name}, you don't have any past orders. What do you want to do?") do |menu|
             menu.choice "Explore & Shop", -> {buy_alcs}
             menu.choice "Return to Main Menu", -> {main_menu}
             end
-        else          
+        else        
             list_of_order_ids = user.order_history.map {|order| order.id}
-            options = user.order_history.each_with_index.map {|order, index| {"#{index+1}) PURCHASE DATE: #{purchase_date(order)}   |   ORDER TOTAL: $#{order_total(order)}   |   ITEM COUNT: #{order_count(order)}" => order.id}}.unshift([{"Return to Main Menu" => "Return to Main Menu"}]).flatten
-                        system 'clear'
+            options = user.order_history.each_with_index.map {|order, index| {"#{index+1}) PURCHASE DATE: #{purchase_date(order)}   |   ORDER TOTAL: $#{order_total(order)}   |   ITEM COUNT: #{order_count(order)}" => order.id}}.push([{"Return to Main Menu" => "Return to Main Menu"}]).flatten
             choice = prompt.select("Would You Like To:", options)
             if choice == "Return to Main Menu"
                 main_menu
@@ -135,11 +137,12 @@ class Application
 
     def account_settings
         system 'clear'
+        puts Rainbow(File.read("lib/wordart/acc_set.txt")).mediumspringgreen.bright
         prompt.select("Hello, #{user.first_name}! Please select from the following options") do |menu|
         menu.choice "Change your FIRST NAME", -> {change_name}
         menu.choice "Change your USERNAME", -> {change_username}
         menu.choice "Update your PASSWORD", -> {change_password}
-        menu.choice "View Order History", -> {smell_you_later}
+        menu.choice "View Order History", -> {view_order_history}
         menu.choice "View your Reviews", -> {view_reviews}
         menu.choice "Delete Account", -> {delete_account}
         menu.choice "Return to Main Menu", -> {main_menu}
@@ -147,6 +150,7 @@ class Application
     end
 
     def view_reviews
+        system 'clear'
         puts Rainbow(File.read("lib/wordart/reviews.txt")).mediumspringgreen.bright
         if !Review.find_by(user_id: user.id)
             prompt.select("Sorry, #{user.first_name}. It looks like you haven't made any reviews yet. What do you want to do?") do |menu|
@@ -173,6 +177,7 @@ class Application
 
     def write_review
         system 'clear'
+        puts Rainbow(File.read("lib/wordart/reviews.txt")).mediumspringgreen.bright
         prompt.select("Thank you for taking the time to review an item, #{user.first_name}. Would you like to") do |menu|
             menu.choice "Review a Spirit from your Order History", -> {review_from_order_history}
             menu.choice "Review Additional Spirits", -> {review_any_spirit}
@@ -192,11 +197,9 @@ class Application
             end
         else 
             puts "Below is a list of all spirits from your previous purchases, sorted by TYPE."
-            options = prev_purchased_items.map { |item| {"NAME: #{item.name}     TYPE: #{item.alcohol_type}    ORIGIN: #{item.origin}     PRICE: $#{"%.2f" % item.price}    RATING: #{item.rating}" => item.id}}.unshift([{"Return to Your Cart" => "Return to Your Cart"}, {"Return to Main Menu" => "Return to Main Menu"}]).flatten
+            options = prev_purchased_items.map { |item| {"NAME: #{item.name}     TYPE: #{item.alcohol_type}    ORIGIN: #{item.origin}     PRICE: $#{"%.2f" % item.price}    RATING: #{item.rating}" => item.id}}.push([{"Return to Main Menu" => "Return to Main Menu"}]).flatten
             choice = prompt.select("Please select the item you'd like to REVIEW", options)
-                if choice == "Return to Your Cart"
-                    view_cart
-                elsif choice == "Return to Main Menu"
+                if choice == "Return to Main Menu"
                     main_menu
                 elsif Review.find_by(user_id: user.id, item_id: choice)
                     prompt.select("Sorry, it looks like you've already left a review for #{Item.find(choice).name}. Would you like to") do |menu|
@@ -284,6 +287,7 @@ class Application
             end
 
     def create_a_rating(item_inst)
+        system 'clear'
         rat = prompt.slider("How many ⭐️'s would you give #{item_inst.name}     ", min: 0, max: 5, step: 1)
         puts "Please enter a review for #{item_inst.name}"
         rev = gets.chomp
@@ -490,6 +494,7 @@ class Application
 
     def buy_alcs
         system 'clear'
+        puts Rainbow(File.read("lib/wordart/exp_n_shop.txt")).mediumspringgreen.bright
         prompt.select("We have the finest spirits to lift up your spirit! How would you like to search?") do |menu|
             menu.choice "Search by NAME", -> {search_by_name}
             menu.choice "Search by TYPE", -> {search_by_type}
@@ -502,6 +507,7 @@ class Application
     end
 
     def search_by_name
+        system 'clear'
         puts "What is the name of the spirit you are looking for?"
         answer = gets.chomp 
         alcohols = Item.where("name LIKE ?", "%#{answer}%").sort_by(&:alcohol_type)
@@ -608,8 +614,8 @@ class Application
                 end
         end
                 
-    def search_by_price 
-        system 'clear'       
+    def search_by_price  
+        system 'clear'  
         prompt.select("Which price range would you like to explore?") do |menu|
             menu.choice "$0 - $50", -> {price_range_helper("$0 - $50", (0.0..50.99))}
             menu.choice "$51 - $100", -> {price_range_helper("$51 - $100", 51.0..100.99)}
@@ -830,8 +836,8 @@ class Application
                             prompt.select("Would you like to:") do |menu|
                                 menu.choice "Add #{item_inst.name} to cart", -> {add_to_cart(item_inst)}
                                 menu.choice "Leave a REVIEW For #{item_inst.name}", -> {leave_review(item_inst)}
-                                menu.choice "Explore Additional #{alc}", -> {purchase_by_type(alc)}
-                                menu.choice "Explore Another Spirit Type", -> {search_by_type}
+                                menu.choice "Explore Additional Spirits From #{country}", -> {purchase_by_origin(country)}
+                                menu.choice "Explore Spirits From a Different Origin", -> {search_by_origin}
                                 menu.choice "Explore Spirits by a Different Criteria", -> {buy_alcs}
                                 menu.choice "Return to Main Menu", -> {main_menu}
                             end 
@@ -900,7 +906,7 @@ class Application
         system 'clear'
         if item.inventory >= 1
         user.add_item_to_cart(item)
-                puts "#{item.name} has been added to your cart."
+                puts Rainbow("#{item.name} has been added to your cart.").mediumspringgreen.bright
                 prompt.select("Would you like to:") do |menu|
                     menu.choice "View Your Current Cart", -> {view_cart}
                     menu.choice "Add Additional Items to Your Cart", -> {buy_alcs}
@@ -908,10 +914,7 @@ class Application
                     menu.choice "Return to Main Menu", -> {main_menu}
                 end 
         elsif
-            print "Sorry #{item.name} is currently "
-            print Rainbow("out of stock").red.bright
-            print ". "
-            prompt.select("Would you like to:") do |menu|
+            prompt.select("Sorry #{item.name} is currently #{oos}. Would you like to:") do |menu|
                 menu.choice "Find an Alternative #{item.alcohol_type}", -> {purchase_by_type(item.alcohol_type)}
                 menu.choice "Add Other Items to Cart", -> {buy_alcs}
                 menu.choice "View Your Current Cart", -> {view_cart}
@@ -920,15 +923,19 @@ class Application
         end 
     end 
 
+        def oos
+            Rainbow("out of stock").red.bright
+        end
+
     def view_cart
         system 'clear'
-        if user.current_cart.items.count <= 0 
         puts Rainbow(File.read("lib/wordart/current_cart.txt")).mediumspringgreen.bright
-        prompt.select("Sorry there's currently nothing in your cart. Would you like to:") do |menu|
+        if user.current_cart.items.count <= 0 
+            prompt.select("Sorry there's currently nothing in your cart. Would you like to:") do |menu|
             menu.choice "Explore & Shop", -> {buy_alcs}
             menu.choice "Return to Main Menu", -> {main_menu}
             menu.choice "Exit App", -> {exit_app}
-        end 
+            end 
         else 
             user.view_current_cart
             print "Your total so far is "
@@ -962,6 +969,9 @@ class Application
 
     def remove_item
         system 'clear'
+        if user.current_cart.items.count <= 0 
+            view_cart
+        else 
         options = user.current_cart.items.collect {|item| {"NAME: #{item.name} PRICE: $#{"%.2f" % item.price} RATING: #{item.rating}" => item.id}}
         choice = prompt.multi_select("Which item(s) would you like to remove? (Use Spacebar to choose items, then press ENTER to complete removal).  If no items are selected and you press ENTER, you will be returned back to your cart.", options)
         oi_insts_to_delete = choice.map { |id_for_item| user.current_cart.order_items.find_by(item_id: id_for_item) }
@@ -977,7 +987,8 @@ class Application
                     menu.choice "Return to Main Menu", -> {main_menu}
                     menu.choice "Exit App", -> {exit_app} 
                 end 
-            end     
+            end 
+        end    
     end
 
     def exit_app

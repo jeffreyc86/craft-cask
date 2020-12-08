@@ -131,27 +131,37 @@ class User < ActiveRecord::Base
     end
 
     def check_out_current_cart
+        system 'clear'
+        puts Rainbow(File.read("lib/wordart/check_out.txt")).mediumspringgreen.bright
 
         destroy_all_order_items_if_sold_out
-        puts "Hope you found everything you were looking for, #{self.first_name}. Here are all the items you have in your current cart:"
+        puts "Hope you found everything you were looking for, #{self.first_name}. Below are all the items in your cart:"
         display_cart
-        
+        puts "This order of #{current_cart_total} has been #{processed}."
         current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
-        puts "Thank for shopping with us, #{self.first_name}. This order of #{current_cart_total} has been processed."
         current_cart.update(checked_out: true)
+        puts "Thank for shopping with us, #{self.first_name}."
     end
 
+        def processed
+            Rainbow("processed").red.bright
+        end
+
     def check_out_after_viewing_cart
-        puts "Thank for shopping with us, #{self.first_name}. This order of #{current_cart_total} has been processed."
+        system 'clear'
+        puts Rainbow(File.read("lib/wordart/check_out.txt")).mediumspringgreen.bright
+        puts "Below are all the items in your cart:"
+        self.display_cart
+        puts "This order of #{current_cart_total} has been #{processed}."
         self.current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
         self.current_cart.update(checked_out: true)
+        puts "Thank for shopping with us, #{self.first_name}."
     end
 
     def view_current_cart
         destroy_all_order_items_if_sold_out
         puts "Hope you're finding everything you are looking for, #{self.first_name}."
-        puts Rainbow(File.read("lib/wordart/current_cart.txt")).mediumspringgreen.bright
-        puts "Here are all the items currently in your cart:"
+        puts "Below are all the items currently in your cart:"
         self.display_cart
     end
 
