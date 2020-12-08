@@ -137,20 +137,21 @@ class User < ActiveRecord::Base
         display_cart
         
         current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
-        puts "Your total today is $#{current_cart_total}. Let's check out!"
+        puts "Thank for shopping with us, #{self.first_name}. This order of #{current_cart_total} has been processed."
         current_cart.update(checked_out: true)
     end
 
     def check_out_after_viewing_cart
-        puts "Thank for shopping with us, #{self.first_name}. This order has been processed."
+        puts "Thank for shopping with us, #{self.first_name}. This order of #{current_cart_total} has been processed."
         self.current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
         self.current_cart.update(checked_out: true)
     end
 
     def view_current_cart
-        #cool banner?
         destroy_all_order_items_if_sold_out
-        puts "Hope you're finding everything you are looking for, #{self.first_name}. Here are all the items currently in your cart:"
+        puts "Hope you're finding everything you are looking for, #{self.first_name}."
+        puts Rainbow(File.read("lib/wordart/current_cart.txt")).mediumspringgreen.bright
+        puts "Here are all the items currently in your cart:"
         self.display_cart
     end
 
@@ -158,12 +159,12 @@ class User < ActiveRecord::Base
         sold_out_items = current_cart.items.where(inventory: 0)
         sold_out_items.each do |item|
             OrderItem.find_by(order_id: current_cart.id, item_id: item.id).destroy
-            puts "Sorry, unfortunately #{item.name} is currently out of stock. It has been removed."
+            puts Rainbow("Sorry, unfortunately #{item.name} is currently out of stock. It has been removed.").red.bright
         end
     end
 
     def current_cart_total 
-        "%.2f" % self.current_cart.items.sum(:price)
+        Rainbow("$#{"%.2f" % self.current_cart.items.sum(:price)}").red.bright
     end 
 
     def display_cart
