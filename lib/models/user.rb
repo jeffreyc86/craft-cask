@@ -28,7 +28,7 @@ class User < ActiveRecord::Base
             end
             
         elsif User.find_by(username: userName) && !user
-            TTY::Prompt.new.select("Sorry you've entered the wrong PASSWORD for USERNAME: #{userName}. Would you like to") do |menu|
+            TTY::Prompt.new.select("Sorry you've entered the wrong USERNAME or PASSWORD. Would you like to") do |menu|
             menu.choice "Login again", -> {login_a_user}
             menu.choice "Register", -> {register_a_user}
             menu.choice "Exit", -> {exit_app}
@@ -83,9 +83,17 @@ class User < ActiveRecord::Base
                                     if !user_name.match?(/^\A\w{5,15}\Z$/) 
                                         puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
                                         user_name = gets.chomp
+                                            until user_name.match?(/^\A\w{5,15}\Z$/) do
+                                                puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
+                                                user_name = gets.chomp
+                                            end 
                                     elsif User.find_by(username: user_name)
                                         puts "Sorry, that username is also taken. Please enter another USERNAME."
                                         user_name = gets.chomp
+                                            until user_name.match?(/^\A\w{5,15}\Z$/) do
+                                                puts "Sorry, that format was incorrect. Please re-enter a USERNAME 5-15 characters long using only using letters, numbers, and underscores(_)."
+                                                user_name = gets.chomp
+                                            end 
                                     end 
                             end
 
@@ -116,7 +124,6 @@ class User < ActiveRecord::Base
                         exit 
                     end
             else
-                system 'clear'
                 puts "Sorry you entered your birthdate in the incorrect format"
                 register_a_user
             end
@@ -140,7 +147,6 @@ class User < ActiveRecord::Base
         puts "This order of #{current_cart_total} has been #{processed}."
         current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
         current_cart.update(checked_out: true)
-        puts "Thank for shopping with us, #{self.first_name}."
     end
 
         def processed
@@ -155,7 +161,6 @@ class User < ActiveRecord::Base
         puts "This order of #{current_cart_total} has been #{processed}."
         self.current_cart.items.each { |item| item.update(inventory: item.inventory - 1) }
         self.current_cart.update(checked_out: true)
-        puts "Thank for shopping with us, #{self.first_name}."
     end
 
     def view_current_cart
