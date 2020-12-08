@@ -10,4 +10,4 @@ Sign up and discover your new favorite spirits.
 3. Run `rake db:seed` to seed all the pre-loaded data
 4. Lastly, run `ruby bin/run.rb` and enjoy!
 
-Brought to you by Jeffrey Chiu & Mark Ghaida
+Brought to you by Jeffrey Chiu & Mark Ghaida of Flatiron School - NYC-MHTN-SE-111620
