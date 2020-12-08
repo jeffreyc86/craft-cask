@@ -225,7 +225,6 @@ class Application
     end
 
     def review_from_order_history
-        system 'clear'
         checked_out_orders = user.orders.where("checked_out = ?", true)
         prev_purchased_items = checked_out_orders.map { |order| order.items }.flatten.uniq.sort_by(&:alcohol_type)
         if !user.orders.find_by(checked_out: true)
@@ -340,7 +339,6 @@ class Application
 
     def leave_review(item_inst)
         if Review.find_by(user_id: user.id, item_id: item_inst.id)
-            system 'clear'
             prompt.select("Sorry, it looks like you've already left a review for #{item_inst.name}. Would you like to") do |menu|
             menu.choice "Edit Your Review for #{item_inst.name}", -> {edit_review(item_inst)}
             menu.choice "Review Another Spirit", -> {write_review}
